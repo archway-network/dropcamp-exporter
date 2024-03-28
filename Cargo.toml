@@ -30,6 +30,8 @@ tendermint-rpc = { version = "0.35.0", features = [
   "tracing-subscriber",
   "http-client",
 ] }
+cosmos-sdk-proto = { version = "0.21.1", default-features = false }
+cosmrs = { version = "0.16.0", features = ["rpc", "tokio", "cosmwasm"] }
 
 tracing = { version = "0.1.40", features = ["async-await", "log"] }
 tracing-appender = "0.2.3"

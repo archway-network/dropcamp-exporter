@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
-use anyhow::*;
+use anyhow::Result;
 
 use clap::{command, Parser};
 use url::Url;
 
-use crate::config::Config;
+use crate::{config::Config, context::Context};
 
 const RPC: &str = "https://rpc.mainnet.archway.io:443";
 
@@ -50,6 +50,8 @@ pub struct Exporter {
 impl Exporter {
     pub async fn execute(self) -> Result<()> {
         let config = self.build_config()?;
+        let context = Context::build(config, self.height).await?;
+
         Ok(())
     }
 
