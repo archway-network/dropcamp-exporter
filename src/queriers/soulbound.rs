@@ -36,19 +36,7 @@ impl SoulboundToken {
             start_after = response.tokens.last().map(|token| token.clone());
 
             let owners: HashSet<String> = stream::iter(response.tokens)
-                .map(|token_id| async move {
-                    tracing::debug!(%token_id, "querying soulbound token owner");
-
-                    let query = cw721::Cw721QueryMsg::OwnerOf {
-                        token_id,
-                        include_expired: Some(true),
-                    };
-
-                    let response: cw721::OwnerOfResponse = self.query_contract(&query).await?;
-                    tracing::debug!(owner = response.owner, "found soulbound token owner");
-
-                    Ok(response.owner)
-                })
+                .map(|token_id| self.get_token_owner(token_id))
                 .buffer_unordered(10)
                 .try_collect()
                 .await?;
@@ -63,6 +51,20 @@ impl SoulboundToken {
         tracing::info!(count = all_owners.len(), "total soulbound token owners");
 
         Ok(all_owners)
+    }
+
+    async fn get_token_owner(&self, token_id: String) -> Result<String> {
+        tracing::debug!(%token_id, "querying soulbound token owner");
+
+        let query = cw721::Cw721QueryMsg::OwnerOf {
+            token_id,
+            include_expired: Some(true),
+        };
+
+        let response: cw721::OwnerOfResponse = self.query_contract(&query).await?;
+        tracing::debug!(owner = response.owner, "found soulbound token owner");
+
+        Ok(response.owner)
     }
 
     async fn query_contract<T, R>(&self, data: &T) -> Result<R>
