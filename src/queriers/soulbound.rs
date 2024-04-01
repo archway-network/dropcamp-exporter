@@ -31,7 +31,7 @@ impl SoulboundToken {
             let count = response.tokens.len();
             tracing::info!(%count, "found soulbound tokens");
 
-            start_after = response.tokens.last().map(|token| token.clone());
+            start_after = response.tokens.last().cloned();
 
             let owners: HashSet<String> = stream::iter(response.tokens)
                 .map(|token_id| self.get_token_owner(token_id))

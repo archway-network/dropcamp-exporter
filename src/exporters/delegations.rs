@@ -35,7 +35,7 @@ impl Exporter for Delegations {
         let delegations: HashMap<String, String> = response
             .delegation_responses
             .into_iter()
-            .map(|delegations| {
+            .filter_map(|delegations| {
                 match (
                     delegations.delegation.map(|d| d.validator_address),
                     delegations.balance.map(|coin| coin.amount),
@@ -44,7 +44,6 @@ impl Exporter for Delegations {
                     _ => None,
                 }
             })
-            .flatten()
             .collect();
 
         let active_delegations = ActiveDelegations {

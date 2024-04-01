@@ -27,7 +27,7 @@ pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
 
     let tasks = exporters
         .iter()
-        .map(|exporter| export(exporter, &addresses))
+        .map(|exporter| export(exporter, addresses))
         .collect::<Vec<_>>();
 
     future::try_join_all(tasks).await?;
@@ -35,6 +35,7 @@ pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::borrowed_box)]
 #[tracing::instrument(skip_all, fields(exporter = type_name::<T>()))]
 async fn export<T>(exporter: &Box<T>, addresses: &HashSet<String>) -> Result<()>
 where
