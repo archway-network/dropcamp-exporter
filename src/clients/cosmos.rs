@@ -10,11 +10,13 @@ use super::rpc::RpcClient;
 
 mod bank;
 mod cosmwasm;
+mod staking;
 
 #[derive(Debug)]
 pub struct CosmosClient {
     pub block: Block,
     pub bank: bank::QueryClient,
+    pub staking: staking::QueryClient,
     pub cosmwasm: cosmwasm::QueryClient,
 }
 
@@ -25,6 +27,7 @@ impl CosmosClient {
         Self {
             block,
             bank: bank::QueryClient::new(rpc.clone()),
+            staking: staking::QueryClient::new(rpc.clone()),
             cosmwasm: cosmwasm::QueryClient::new(rpc.clone()),
         }
     }
