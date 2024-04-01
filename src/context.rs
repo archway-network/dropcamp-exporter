@@ -3,7 +3,7 @@ use std::{path::PathBuf, sync::Arc};
 use anyhow::*;
 use url::Url;
 
-use crate::clients::CosmosClient;
+use crate::{clients::CosmosClient, csv};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Chain {
@@ -20,15 +20,22 @@ pub struct Endpoint {
 #[derive(Clone, Debug)]
 pub struct Context {
     pub chain: Chain,
-    pub rpc: Endpoint,
     pub soulbound_address: String,
     pub cosmos: Arc<CosmosClient>,
-    pub output: PathBuf,
+    output: PathBuf,
 }
 
 impl Context {
     pub fn builder() -> ContextBuilder {
         ContextBuilder::default()
+    }
+
+    pub async fn csv_writer<T>(&self, name: &str) -> Result<csv::Writer<T>>
+    where
+        T: csv::Item,
+    {
+        let path = self.output.join(name).with_extension("csv");
+        csv::Writer::create(path).await
     }
 }
 
@@ -84,7 +91,6 @@ impl ContextBuilder {
 
         let ctx = Context {
             chain,
-            rpc,
             soulbound_address,
             cosmos: Arc::new(cosmos),
             output,
