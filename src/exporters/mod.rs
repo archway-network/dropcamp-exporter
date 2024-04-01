@@ -7,6 +7,7 @@ use futures::{future, stream, StreamExt, TryStreamExt};
 use crate::Context;
 
 mod balances;
+mod delegations;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
@@ -18,6 +19,7 @@ pub async fn run(ctx: &Context, addresses: &HashSet<String>) -> Result<()> {
 
     let exporters: Vec<Box<dyn Exporter>> = vec![
         Box::new(balances::Balances::create(ctx.clone()).await?),
+        Box::new(delegations::Delegations::create(ctx.clone()).await?),
     ];
 
     let tasks = exporters
