@@ -13,15 +13,13 @@ pub struct Balances {
 
 impl Balances {
     pub async fn create(ctx: Context) -> Result<Self> {
-        let csv = ctx.csv_writer(Self::NAME).await?;
+        let csv = ctx.csv_writer("balances").await?;
         Ok(Self { ctx, csv })
     }
 }
 
 #[async_trait]
 impl Exporter for Balances {
-    const NAME: &'static str = "balances";
-
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
         tracing::debug!("exporting all balances");
