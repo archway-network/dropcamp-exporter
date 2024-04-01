@@ -1,10 +1,9 @@
 use std::{any::type_name, collections::HashSet};
 
-use anyhow::Result;
 use async_trait::async_trait;
 use futures::{future, stream, StreamExt, TryStreamExt};
 
-use crate::Context;
+use crate::prelude::*;
 
 mod archid;
 mod balances;
@@ -16,7 +15,7 @@ pub trait Exporter: Sync + Send {
     async fn export(&self, address: &str) -> Result<()>;
 }
 
-pub async fn run(ctx: &Context, addresses: &HashSet<String>) -> Result<()> {
+pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
     tracing::info!("running exporters");
 
     let exporters: Vec<Box<dyn Exporter>> = vec![

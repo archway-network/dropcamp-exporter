@@ -1,6 +1,7 @@
-use crate::{csv, queriers::liquid::LiquidFinanceCw20, Context};
-use anyhow::Result;
 use async_trait::async_trait;
+
+use crate::prelude::*;
+use crate::{csv, queriers::liquid::LiquidFinanceCw20, Context};
 
 use super::Exporter;
 
@@ -10,7 +11,7 @@ pub struct LiquidFinance {
 }
 
 impl LiquidFinance {
-    pub async fn create(ctx: Context) -> Result<Self> {
+    pub async fn create(ctx: Arc<Context>) -> Result<Self> {
         let csv = ctx.csv_writer("liquid-finance").await?;
         let liquid = LiquidFinanceCw20::new(ctx);
 

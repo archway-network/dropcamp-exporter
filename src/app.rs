@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use anyhow::Result;
 use clap::Parser;
 
+use crate::exporters;
+use crate::prelude::*;
 use crate::queriers::soulbound::SoulboundToken;
-use crate::{exporters, Context};
 
 use url::Url;
 
@@ -72,11 +72,12 @@ impl App {
             .output(self.output.clone())
             .build()
             .await?;
+        let ctx = Arc::new(ctx);
 
         let soulbound_token = SoulboundToken::new(ctx.clone());
         let addresses = soulbound_token.get_owners().await?;
 
-        exporters::run(&ctx, &addresses).await?;
+        exporters::run(ctx, &addresses).await?;
 
         Ok(())
     }

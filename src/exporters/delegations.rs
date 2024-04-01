@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 
-use crate::{csv, Context};
-use anyhow::Result;
 use async_trait::async_trait;
+
+use crate::prelude::*;
+use crate::{csv, Context};
 
 use super::Exporter;
 
 pub struct Delegations {
-    ctx: Context,
+    ctx: Arc<Context>,
     csv: csv::Writer<ActiveDelegations>,
 }
 
 impl Delegations {
-    pub async fn create(ctx: Context) -> Result<Self> {
+    pub async fn create(ctx: Arc<Context>) -> Result<Self> {
         let csv = ctx.csv_writer("delegations").await?;
         Ok(Self { ctx, csv })
     }
