@@ -6,7 +6,7 @@ use futures::future;
 
 use crate::Context;
 
-mod assets;
+mod balances;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
@@ -18,8 +18,8 @@ pub trait Exporter: Sync + Send {
 pub async fn run(ctx: &Context, addresses: &HashSet<String>) -> Result<()> {
     tracing::info!("running exporters");
 
-    let assets = assets::AssetsExporter::create(ctx.clone()).await?;
-    let exporters = vec![assets];
+    let balances = balances::Balances::create(ctx.clone()).await?;
+    let exporters = vec![balances];
 
     let tasks = exporters
         .iter()

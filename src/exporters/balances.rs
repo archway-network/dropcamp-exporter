@@ -6,12 +6,12 @@ use async_trait::async_trait;
 
 use super::Exporter;
 
-pub struct AssetsExporter {
+pub struct Balances {
     ctx: Context,
-    csv: csv::Writer<AddressAssets>,
+    csv: csv::Writer<AddressBalances>,
 }
 
-impl AssetsExporter {
+impl Balances {
     pub async fn create(ctx: Context) -> Result<Self> {
         let csv = ctx.csv_writer(Self::NAME).await?;
         Ok(Self { ctx, csv })
@@ -19,12 +19,12 @@ impl AssetsExporter {
 }
 
 #[async_trait]
-impl Exporter for AssetsExporter {
-    const NAME: &'static str = "assets";
+impl Exporter for Balances {
+    const NAME: &'static str = "balances";
 
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::debug!("exporting bridged assets");
+        tracing::debug!("exporting all balances");
 
         let response = self.ctx.cosmos.bank.balances(address.to_string()).await?;
         let balances: HashMap<String, String> = response
@@ -33,7 +33,7 @@ impl Exporter for AssetsExporter {
             .map(|coin| (coin.denom, coin.amount))
             .collect();
 
-        let assets = AddressAssets {
+        let assets = AddressBalances {
             address: address.to_string(),
             balances,
         };
@@ -44,12 +44,12 @@ impl Exporter for AssetsExporter {
     }
 }
 
-pub struct AddressAssets {
+pub struct AddressBalances {
     address: String,
     balances: HashMap<String, String>,
 }
 
-impl csv::Item for AddressAssets {
+impl csv::Item for AddressBalances {
     fn header() -> csv::Header {
         vec!["address", "denom", "amount"]
     }
