@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
-use cosmos_sdk_proto::cosmos::bank::v1beta1::{
-    QueryBalanceRequest, QueryBalanceResponse, QuerySupplyOfRequest, QuerySupplyOfResponse,
+use cosmos_sdk_proto::cosmos::{
+    bank::v1beta1::{QueryAllBalancesRequest, QueryAllBalancesResponse},
+    base::query::v1beta1::PageRequest,
 };
 
 use super::super::rpc::RpcClient;
@@ -17,24 +18,18 @@ impl QueryClient {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn total_supply(&self, denom: String) -> anyhow::Result<QuerySupplyOfResponse> {
-        let request = QuerySupplyOfRequest { denom };
+    pub async fn balances(&self, address: String) -> anyhow::Result<QueryAllBalancesResponse> {
+        let pagination = PageRequest {
+            limit: 1000,
+            ..Default::default()
+        };
+        let request = QueryAllBalancesRequest {
+            address,
+            pagination: Some(pagination),
+        };
 
         self.rpc
-            .request("cosmos.bank.v1beta1.Query", "SupplyOf", request)
-            .await
-    }
-
-    #[tracing::instrument(skip(self))]
-    pub async fn balance(
-        &self,
-        address: String,
-        denom: String,
-    ) -> anyhow::Result<QueryBalanceResponse> {
-        let request = QueryBalanceRequest { address, denom };
-
-        self.rpc
-            .request("cosmos.bank.v1beta1.Query", "Balance", request)
+            .request("cosmos.bank.v1beta1.Query", "AllBalances", request)
             .await
     }
 }
