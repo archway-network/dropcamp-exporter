@@ -39,13 +39,17 @@ pub struct App {
     #[arg(long)]
     pub height: Option<u64>,
 
-    /// Address for the soulbound token smart contract.
+    /// Address for the soulbound token cw721 smart contract.
     #[arg(long)]
     pub soulbound_address: String,
 
     /// Address for the ArchID registry smart contract.
     #[arg(long)]
     pub archid_address: String,
+
+    /// Address for the Liquid Finance cw20 smart contract.
+    #[arg(long)]
+    pub liquid_finance_address: String,
 
     /// Directory path to output the CSV files.
     #[arg(short, long)]
@@ -64,6 +68,7 @@ impl App {
             .height(self.height)
             .soulbound_address(self.soulbound_address.clone())
             .archid_address(self.archid_address.clone())
+            .liquid_finance_address(self.liquid_finance_address.clone())
             .output(self.output.clone())
             .build()
             .await?;
