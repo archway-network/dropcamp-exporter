@@ -9,6 +9,7 @@ use crate::Context;
 mod archid;
 mod balances;
 mod delegations;
+mod liquid;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
@@ -22,6 +23,7 @@ pub async fn run(ctx: &Context, addresses: &HashSet<String>) -> Result<()> {
         Box::new(balances::Balances::create(ctx.clone()).await?),
         Box::new(delegations::Delegations::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),
+        Box::new(liquid::LiquidFinance::create(ctx.clone()).await?),
     ];
 
     let tasks = exporters
