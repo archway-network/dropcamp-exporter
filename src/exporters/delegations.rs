@@ -23,7 +23,7 @@ impl Delegations {
 impl Exporter for Delegations {
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::debug!("exporting delegations");
+        tracing::info!("exporting delegations");
 
         let response = self
             .ctx

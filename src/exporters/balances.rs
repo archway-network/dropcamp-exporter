@@ -23,7 +23,7 @@ impl Balances {
 impl Exporter for Balances {
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::debug!("exporting all balances");
+        tracing::info!("exporting all balances");
 
         let response = self.ctx.cosmos.bank.balances(address.to_string()).await?;
         let balances: HashMap<String, String> = response

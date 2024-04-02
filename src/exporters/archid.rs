@@ -23,7 +23,7 @@ impl ArchId {
 impl Exporter for ArchId {
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::debug!("exporting ArchID domains");
+        tracing::info!("exporting ArchID domains");
 
         let names = self.archid.resolve_domains(address.to_string()).await?;
         let assets = AddressNames {

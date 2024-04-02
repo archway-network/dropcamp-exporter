@@ -1,4 +1,4 @@
-use std::{any::type_name, collections::HashSet};
+use std::collections::HashSet;
 
 use async_trait::async_trait;
 use futures::{future, stream, StreamExt, TryStreamExt};
@@ -16,7 +16,7 @@ pub trait Exporter: Sync + Send {
 }
 
 pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
-    tracing::info!("running exporters");
+    tracing::info!("starting data export");
 
     let exporters: Vec<Box<dyn Exporter>> = vec![
         Box::new(balances::Balances::create(ctx.clone()).await?),
@@ -32,24 +32,22 @@ pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
 
     future::try_join_all(tasks).await?;
 
+    tracing::info!("data export finished");
+
     Ok(())
 }
 
 #[allow(clippy::borrowed_box)]
-#[tracing::instrument(skip_all, fields(exporter = type_name::<T>()))]
+#[tracing::instrument(skip_all)]
 async fn export<T>(exporter: &Box<T>, addresses: &HashSet<String>) -> Result<()>
 where
     T: Exporter + ?Sized,
 {
-    tracing::info!("starting data export");
-
     stream::iter(addresses.iter())
         .map(|address| exporter.export(address.as_str()))
         .buffer_unordered(10)
         .try_collect::<Vec<_>>()
         .await?;
-
-    tracing::info!("data export finished");
 
     Ok(())
 }
