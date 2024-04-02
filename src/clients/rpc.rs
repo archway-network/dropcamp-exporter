@@ -30,7 +30,7 @@ impl RpcClient {
     pub fn builder(url: Url) -> Builder {
         Builder {
             url,
-            rate_limit: None,
+            req_second: None,
             height: None,
         }
     }
@@ -64,13 +64,13 @@ impl RpcClient {
 
 pub struct Builder {
     url: Url,
-    rate_limit: Option<u64>,
+    req_second: Option<u64>,
     height: Option<u64>,
 }
 
 impl Builder {
-    pub fn rate_limit(mut self, rate_limit: Option<u64>) -> Self {
-        self.rate_limit = rate_limit;
+    pub fn req_second(mut self, req_second: Option<u64>) -> Self {
+        self.req_second = req_second;
         self
     }
 
@@ -92,7 +92,7 @@ impl Builder {
             .buffer(100)
             .concurrency_limit(50)
             .option_layer(
-                self.rate_limit
+                self.req_second
                     .map(|num| RateLimitLayer::new(num, Duration::from_secs(1))),
             )
             .service(HttpClientWrapper::new(client))

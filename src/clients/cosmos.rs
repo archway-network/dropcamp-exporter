@@ -17,10 +17,10 @@ pub struct CosmosClient {
 }
 
 impl CosmosClient {
-    pub async fn new(url: Url, rate_limit: Option<u64>, height: Option<u64>) -> Result<Self> {
+    pub async fn new(url: Url, req_second: Option<u64>, height: Option<u64>) -> Result<Self> {
         let rpc = Arc::new(
             RpcClient::builder(url)
-                .rate_limit(rate_limit)
+                .req_second(req_second)
                 .height(height)
                 .build()
                 .await?,
