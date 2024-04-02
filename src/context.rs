@@ -102,12 +102,7 @@ impl ContextBuilder {
             .ok_or(anyhow!("missing liquid finance address"))?;
         let output = self.output.ok_or(anyhow!("missing output directory"))?;
 
-        let cosmos = CosmosClient::builder()
-            .url(rpc.url.clone().try_into()?)
-            .rate_limit(rpc.rate_limit)
-            .height(self.height)
-            .build()
-            .await?;
+        let cosmos = CosmosClient::new(rpc.url, rpc.rate_limit, self.height).await?;
 
         let ctx = Context {
             chain,
