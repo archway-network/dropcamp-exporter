@@ -89,6 +89,8 @@ impl Builder {
         tracing::info!(block = ?block, "creating rpc client for block");
 
         let svc = ServiceBuilder::new()
+            .buffer(100)
+            .concurrency_limit(50)
             .option_layer(
                 self.rate_limit
                     .map(|num| RateLimitLayer::new(num, Duration::from_secs(1))),
