@@ -39,6 +39,18 @@ pub struct App {
     #[arg(long)]
     pub liquid_finance_address: String,
 
+    /// Url for the Astrovault liquidity pools API.
+    #[arg(long)]
+    pub astrovault_url: Url,
+
+    /// Limits the number of requests per second to the Astrovault API.
+    #[arg(long)]
+    pub astrovault_req_second: Option<u64>,
+
+    /// API key for the Astrovault API.
+    #[arg(long)]
+    pub astrovault_api_key: Option<String>,
+
     /// Directory path to output the CSV files.
     #[arg(short, long)]
     pub output: PathBuf,
@@ -56,6 +68,11 @@ impl App {
             .soulbound_address(self.soulbound_address.clone())
             .archid_address(self.archid_address.clone())
             .liquid_finance_address(self.liquid_finance_address.clone())
+            .astrovault(
+                self.astrovault_url.clone(),
+                self.astrovault_req_second,
+                self.astrovault_api_key.clone(),
+            )
             .output(self.output.clone())
             .build()
             .await?;

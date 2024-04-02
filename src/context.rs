@@ -9,6 +9,7 @@ use crate::{clients::CosmosClient, csv};
 pub struct Endpoint {
     pub url: Url,
     pub req_second: Option<u64>,
+    pub api_key: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -41,12 +42,17 @@ pub struct ContextBuilder {
     soulbound_address: Option<String>,
     archid_address: Option<String>,
     liquid_finance_address: Option<String>,
+    astrovault: Option<Endpoint>,
     output: Option<PathBuf>,
 }
 
 impl ContextBuilder {
     pub fn rpc(mut self, url: Url, req_second: Option<u64>) -> Self {
-        self.rpc = Some(Endpoint { url, req_second });
+        self.rpc = Some(Endpoint {
+            url,
+            req_second,
+            api_key: None,
+        });
         self
     }
 
@@ -67,6 +73,20 @@ impl ContextBuilder {
 
     pub fn liquid_finance_address(mut self, liquid_finance_address: String) -> Self {
         self.liquid_finance_address = Some(liquid_finance_address);
+        self
+    }
+
+    pub fn astrovault(
+        mut self,
+        url: Url,
+        req_second: Option<u64>,
+        api_key: Option<String>,
+    ) -> Self {
+        self.astrovault = Some(Endpoint {
+            url,
+            req_second,
+            api_key,
+        });
         self
     }
 
