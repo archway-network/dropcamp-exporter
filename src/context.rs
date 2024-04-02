@@ -6,12 +6,6 @@ use url::Url;
 use crate::{clients::CosmosClient, csv};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Chain {
-    pub id: String,
-    pub denom: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Endpoint {
     pub url: Url,
     pub req_second: Option<u64>,
@@ -19,7 +13,6 @@ pub struct Endpoint {
 
 #[derive(Clone, Debug)]
 pub struct Context {
-    pub chain: Chain,
     pub soulbound_address: String,
     pub archid_address: String,
     pub liquid_finance_address: String,
@@ -43,7 +36,6 @@ impl Context {
 
 #[derive(Default)]
 pub struct ContextBuilder {
-    chain: Option<Chain>,
     rpc: Option<Endpoint>,
     height: Option<u64>,
     soulbound_address: Option<String>,
@@ -53,11 +45,6 @@ pub struct ContextBuilder {
 }
 
 impl ContextBuilder {
-    pub fn chain(mut self, id: String, denom: String) -> Self {
-        self.chain = Some(Chain { id, denom });
-        self
-    }
-
     pub fn rpc(mut self, url: Url, req_second: Option<u64>) -> Self {
         self.rpc = Some(Endpoint { url, req_second });
         self
@@ -89,7 +76,6 @@ impl ContextBuilder {
     }
 
     pub async fn build(self) -> Result<Context> {
-        let chain = self.chain.ok_or(anyhow!("missing network in config"))?;
         let rpc = self.rpc.ok_or(anyhow!("missing rpc in config"))?;
         let soulbound_address = self
             .soulbound_address
@@ -105,7 +91,6 @@ impl ContextBuilder {
         let cosmos = CosmosClient::new(rpc.url, rpc.req_second, self.height).await?;
 
         let ctx = Context {
-            chain,
             soulbound_address,
             archid_address,
             liquid_finance_address,
