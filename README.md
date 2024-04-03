@@ -61,6 +61,19 @@ Options:
           Print version
 ```
 
+### Example
+
+```bash
+cargo run -- -o ./data \
+    --rpc-req-second 250 \
+    --soulbound-address archway1xxr6slevyf6ka8ksv332a4s209k903c8tn2hmnku6xlkvl32skdqhjafuc \
+    --archid-address archway1cf5rq0amcl5m2flqrtl4gw2mdl3zdec9vlp5hfa9hgxlwnmrlazsdycu4l \
+    --liquid-finance-address archway1t2llqsvwwunf98v692nqd5juudcmmlu3zk55utx7xtfvznel030saclvq6 \
+    --astrovault-url ${AV_URL} \
+    --astrovault-api-key ${AV_API_KEY} \
+    --astrovault-req-second 10
+```
+
 ## Output
 
 All CSV files will be exported to the folder specified in the `--output` flag:
