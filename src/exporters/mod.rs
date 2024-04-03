@@ -19,6 +19,8 @@ pub trait Exporter: Sync + Send {
 pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
     tracing::info!("starting data export");
 
+    ctx.create_output_folder()?;
+
     let exporters: Vec<Box<dyn Exporter>> = vec![
         Box::new(balances::Balances::create(ctx.clone()).await?),
         Box::new(delegations::Delegations::create(ctx.clone()).await?),

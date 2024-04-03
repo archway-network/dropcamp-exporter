@@ -30,6 +30,11 @@ impl Context {
         ContextBuilder::default()
     }
 
+    pub fn create_output_folder(&self) -> Result<()> {
+        std::fs::create_dir_all(&self.output)?;
+        Ok(())
+    }
+
     pub async fn csv_writer<T>(&self, name: &str) -> Result<csv::Writer<T>>
     where
         T: csv::Item,
