@@ -1,18 +1,16 @@
+use std::{collections::HashSet, sync::Arc};
+
 use futures::stream::{self, StreamExt, TryStreamExt};
 use serde::{de::DeserializeOwned, Serialize};
 
-use std::collections::HashSet;
-
-use anyhow::*;
-
-use crate::context::Context;
+use crate::prelude::*;
 
 pub struct SoulboundToken {
-    ctx: Context,
+    ctx: Arc<Context>,
 }
 
 impl SoulboundToken {
-    pub fn new(ctx: Context) -> Self {
+    pub fn new(ctx: Arc<Context>) -> Self {
         Self { ctx }
     }
 
@@ -33,7 +31,7 @@ impl SoulboundToken {
             let count = response.tokens.len();
             tracing::info!(%count, "found soulbound tokens");
 
-            start_after = response.tokens.last().map(|token| token.clone());
+            start_after = response.tokens.last().cloned();
 
             let owners: HashSet<String> = stream::iter(response.tokens)
                 .map(|token_id| self.get_token_owner(token_id))

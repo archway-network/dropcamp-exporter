@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use anyhow::Result;
 use clap::Parser;
 
+use crate::exporters;
+use crate::prelude::*;
 use crate::queriers::soulbound::SoulboundToken;
-use crate::{exporters, Context};
 
 use url::Url;
 
@@ -32,7 +32,7 @@ pub struct App {
 
     /// Limits the number of requests per second to the RPC endpoint.
     #[arg(long)]
-    pub rpc_rate_limit: Option<u64>,
+    pub rpc_req_second: Option<u64>,
 
     /// Runs the operation on a specific block height.
     /// Otherwise, it will query the chain to get the latest block height.
@@ -64,7 +64,7 @@ impl App {
     pub async fn run(&self) -> Result<()> {
         let ctx = Context::builder()
             .chain(self.chain_id.clone(), self.denom.clone())
-            .rpc(self.rpc_url.clone(), self.rpc_rate_limit)
+            .rpc(self.rpc_url.clone(), self.rpc_req_second)
             .height(self.height)
             .soulbound_address(self.soulbound_address.clone())
             .archid_address(self.archid_address.clone())
@@ -72,11 +72,12 @@ impl App {
             .output(self.output.clone())
             .build()
             .await?;
+        let ctx = Arc::new(ctx);
 
         let soulbound_token = SoulboundToken::new(ctx.clone());
         let addresses = soulbound_token.get_owners().await?;
 
-        exporters::run(&ctx, &addresses).await?;
+        exporters::run(ctx, &addresses).await?;
 
         Ok(())
     }

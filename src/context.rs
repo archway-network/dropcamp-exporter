@@ -14,7 +14,7 @@ pub struct Chain {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Endpoint {
     pub url: Url,
-    pub rate_limit: Option<u64>,
+    pub req_second: Option<u64>,
 }
 
 #[derive(Clone, Debug)]
@@ -58,8 +58,8 @@ impl ContextBuilder {
         self
     }
 
-    pub fn rpc(mut self, url: Url, rate_limit: Option<u64>) -> Self {
-        self.rpc = Some(Endpoint { url, rate_limit });
+    pub fn rpc(mut self, url: Url, req_second: Option<u64>) -> Self {
+        self.rpc = Some(Endpoint { url, req_second });
         self
     }
 
@@ -102,12 +102,7 @@ impl ContextBuilder {
             .ok_or(anyhow!("missing liquid finance address"))?;
         let output = self.output.ok_or(anyhow!("missing output directory"))?;
 
-        let cosmos = CosmosClient::builder()
-            .url(rpc.url.clone().try_into()?)
-            .rate_limit(rpc.rate_limit)
-            .height(self.height)
-            .build()
-            .await?;
+        let cosmos = CosmosClient::new(rpc.url, rpc.req_second, self.height).await?;
 
         let ctx = Context {
             chain,

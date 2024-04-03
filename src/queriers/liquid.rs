@@ -1,8 +1,6 @@
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use anyhow::*;
-
-use crate::context::Context;
+use crate::prelude::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -16,11 +14,11 @@ pub struct BalanceResponse {
 }
 
 pub struct LiquidFinanceCw20 {
-    ctx: Context,
+    ctx: Arc<Context>,
 }
 
 impl LiquidFinanceCw20 {
-    pub fn new(ctx: Context) -> Self {
+    pub fn new(ctx: Arc<Context>) -> Self {
         Self { ctx }
     }
 

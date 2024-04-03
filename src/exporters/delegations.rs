@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 
-use crate::{csv, Context};
-use anyhow::Result;
 use async_trait::async_trait;
+
+use crate::prelude::*;
+use crate::{csv, Context};
 
 use super::Exporter;
 
 pub struct Delegations {
-    ctx: Context,
+    ctx: Arc<Context>,
     csv: csv::Writer<ActiveDelegations>,
 }
 
 impl Delegations {
-    pub async fn create(ctx: Context) -> Result<Self> {
+    pub async fn create(ctx: Arc<Context>) -> Result<Self> {
         let csv = ctx.csv_writer("delegations").await?;
         Ok(Self { ctx, csv })
     }
@@ -22,7 +23,7 @@ impl Delegations {
 impl Exporter for Delegations {
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::debug!("exporting delegations");
+        tracing::info!("exporting delegations");
 
         let response = self
             .ctx
@@ -34,7 +35,7 @@ impl Exporter for Delegations {
         let delegations: HashMap<String, String> = response
             .delegation_responses
             .into_iter()
-            .map(|delegations| {
+            .filter_map(|delegations| {
                 match (
                     delegations.delegation.map(|d| d.validator_address),
                     delegations.balance.map(|coin| coin.amount),
@@ -43,7 +44,6 @@ impl Exporter for Delegations {
                     _ => None,
                 }
             })
-            .flatten()
             .collect();
 
         let active_delegations = ActiveDelegations {

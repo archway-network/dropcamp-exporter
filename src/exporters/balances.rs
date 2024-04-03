@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 
-use crate::{csv, Context};
-use anyhow::Result;
 use async_trait::async_trait;
+
+use crate::prelude::*;
+use crate::{csv, Context};
 
 use super::Exporter;
 
 pub struct Balances {
-    ctx: Context,
+    ctx: Arc<Context>,
     csv: csv::Writer<AddressBalances>,
 }
 
 impl Balances {
-    pub async fn create(ctx: Context) -> Result<Self> {
+    pub async fn create(ctx: Arc<Context>) -> Result<Self> {
         let csv = ctx.csv_writer("balances").await?;
         Ok(Self { ctx, csv })
     }
@@ -22,7 +23,7 @@ impl Balances {
 impl Exporter for Balances {
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::debug!("exporting all balances");
+        tracing::info!("exporting all balances");
 
         let response = self.ctx.cosmos.bank.balances(address.to_string()).await?;
         let balances: HashMap<String, String> = response
