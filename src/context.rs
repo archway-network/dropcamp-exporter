@@ -21,6 +21,7 @@ pub struct Endpoint {
 pub struct Context {
     pub chain: Chain,
     pub soulbound_address: String,
+    pub archid_address: String,
     pub cosmos: Arc<CosmosClient>,
     output: PathBuf,
 }
@@ -45,6 +46,7 @@ pub struct ContextBuilder {
     rpc: Option<Endpoint>,
     height: Option<u64>,
     soulbound_address: Option<String>,
+    archid_address: Option<String>,
     output: Option<PathBuf>,
 }
 
@@ -69,6 +71,11 @@ impl ContextBuilder {
         self
     }
 
+    pub fn archid_address(mut self, archid_address: String) -> Self {
+        self.archid_address = Some(archid_address);
+        self
+    }
+
     pub fn output(mut self, output: PathBuf) -> Self {
         self.output = Some(output);
         self
@@ -80,6 +87,9 @@ impl ContextBuilder {
         let soulbound_address = self
             .soulbound_address
             .ok_or(anyhow!("missing soulbound address"))?;
+        let archid_address = self
+            .archid_address
+            .ok_or(anyhow!("missing archid address"))?;
         let output = self.output.ok_or(anyhow!("missing output directory"))?;
 
         let cosmos = CosmosClient::builder()
@@ -92,6 +102,7 @@ impl ContextBuilder {
         let ctx = Context {
             chain,
             soulbound_address,
+            archid_address,
             cosmos: Arc::new(cosmos),
             output,
         };

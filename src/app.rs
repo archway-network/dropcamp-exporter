@@ -43,6 +43,10 @@ pub struct App {
     #[arg(long)]
     pub soulbound_address: String,
 
+    /// Address for the ArchID registry smart contract.
+    #[arg(long)]
+    pub archid_address: String,
+
     /// Directory path to output the CSV files.
     #[arg(short, long)]
     pub output: PathBuf,
@@ -59,6 +63,7 @@ impl App {
             .rpc(self.rpc_url.clone(), self.rpc_rate_limit)
             .height(self.height)
             .soulbound_address(self.soulbound_address.clone())
+            .archid_address(self.archid_address.clone())
             .output(self.output.clone())
             .build()
             .await?;
