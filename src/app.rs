@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::Parser;
 
 use crate::queriers::soulbound::SoulboundToken;
-use crate::Context;
+use crate::{exporters, Context};
 
 use url::Url;
 
@@ -64,7 +64,9 @@ impl App {
             .await?;
 
         let soulbound_token = SoulboundToken::new(ctx.clone());
-        let _owners = soulbound_token.get_owners().await?;
+        let addresses = soulbound_token.get_owners().await?;
+
+        exporters::run(&ctx, &addresses).await?;
 
         Ok(())
     }
