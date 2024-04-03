@@ -6,10 +6,10 @@ use futures::{future, stream, StreamExt, TryStreamExt};
 use crate::prelude::*;
 
 mod archid;
+mod astrovault;
 mod balances;
 mod delegations;
 mod liquid;
-mod astrovault;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
