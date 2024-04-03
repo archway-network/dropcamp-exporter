@@ -1,25 +1,26 @@
-use std::collections::HashSet;
+use std::{any::type_name, collections::HashSet};
 
 use anyhow::Result;
 use async_trait::async_trait;
-use futures::future;
+use futures::{future, stream, StreamExt, TryStreamExt};
 
 use crate::Context;
 
 mod balances;
+mod delegations;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
-    const NAME: &'static str;
-
     async fn export(&self, address: &str) -> Result<()>;
 }
 
 pub async fn run(ctx: &Context, addresses: &HashSet<String>) -> Result<()> {
     tracing::info!("running exporters");
 
-    let balances = balances::Balances::create(ctx.clone()).await?;
-    let exporters = vec![balances];
+    let exporters: Vec<Box<dyn Exporter>> = vec![
+        Box::new(balances::Balances::create(ctx.clone()).await?),
+        Box::new(delegations::Delegations::create(ctx.clone()).await?),
+    ];
 
     let tasks = exporters
         .iter()
@@ -31,19 +32,18 @@ pub async fn run(ctx: &Context, addresses: &HashSet<String>) -> Result<()> {
     Ok(())
 }
 
-#[tracing::instrument(skip_all, fields(exporter = T::NAME))]
-async fn export<T>(exporter: &T, addresses: &HashSet<String>) -> Result<()>
+#[tracing::instrument(skip_all, fields(exporter = type_name::<T>()))]
+async fn export<T>(exporter: &Box<T>, addresses: &HashSet<String>) -> Result<()>
 where
-    T: Exporter,
+    T: Exporter + ?Sized,
 {
     tracing::info!("starting data export");
 
-    let tasks = addresses
-        .iter()
+    stream::iter(addresses.iter())
         .map(|address| exporter.export(address.as_str()))
-        .collect::<Vec<_>>();
-
-    future::try_join_all(tasks).await?;
+        .buffer_unordered(10)
+        .try_collect::<Vec<_>>()
+        .await?;
 
     tracing::info!("data export finished");
 
