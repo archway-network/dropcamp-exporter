@@ -115,7 +115,7 @@ impl Builder {
             }
         };
 
-        Ok(block.block.header.try_into()?)
+        block.block.header.try_into()
     }
 }
 
