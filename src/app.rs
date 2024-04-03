@@ -1,11 +1,12 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
+use clap::Parser;
 
-use clap::{command, Parser};
+use crate::queriers::soulbound::SoulboundToken;
+use crate::Context;
+
 use url::Url;
-
-use crate::{config::Config, context::Context};
 
 const RPC: &str = "https://rpc.mainnet.archway.io:443";
 
@@ -16,7 +17,7 @@ const DENOM: &str = "aarch";
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
-pub struct Exporter {
+pub struct App {
     /// ID of the chain.
     #[arg(long, default_value = CHAIN_ID)]
     pub chain_id: String,
@@ -38,6 +39,10 @@ pub struct Exporter {
     #[arg(long)]
     pub height: Option<u64>,
 
+    /// Address for the soulbound token smart contract.
+    #[arg(long)]
+    pub soulbound_address: String,
+
     /// Directory path to output the CSV files.
     #[arg(short, long)]
     pub output: PathBuf,
@@ -47,18 +52,20 @@ pub struct Exporter {
     pub log_level: tracing::metadata::LevelFilter,
 }
 
-impl Exporter {
-    pub async fn execute(self) -> Result<()> {
-        let config = self.build_config()?;
-        let context = Context::build(config, self.height).await?;
-
-        Ok(())
-    }
-
-    fn build_config(&self) -> Result<Config> {
-        Config::builder()
+impl App {
+    pub async fn run(&self) -> Result<()> {
+        let ctx = Context::builder()
             .chain(self.chain_id.clone(), self.denom.clone())
             .rpc(self.rpc_url.clone(), self.rpc_rate_limit)
+            .height(self.height)
+            .soulbound_address(self.soulbound_address.clone())
+            .output(self.output.clone())
             .build()
+            .await?;
+
+        let soulbound_token = SoulboundToken::new(ctx.clone());
+        let _owners = soulbound_token.get_owners().await?;
+
+        Ok(())
     }
 }
