@@ -9,6 +9,7 @@ mod archid;
 mod balances;
 mod delegations;
 mod liquid;
+mod astrovault;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
@@ -23,6 +24,7 @@ pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
         Box::new(delegations::Delegations::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),
         Box::new(liquid::LiquidFinance::create(ctx.clone()).await?),
+        Box::new(astrovault::Astrovault::create(ctx.clone()).await?),
     ];
 
     let tasks = exporters

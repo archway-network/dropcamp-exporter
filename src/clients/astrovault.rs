@@ -10,7 +10,9 @@ use tower::{BoxError, Service, ServiceBuilder, ServiceExt};
 use url::Url;
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WalletStats {
+    #[serde(rename = "hasLPd")]
     pub has_lpd: bool,
     pub has_traded: bool,
 }
@@ -21,6 +23,7 @@ pub struct WalletTvl {
     pub tvl: f64,
 }
 
+#[derive(Debug)]
 pub struct AstrovaultClient {
     url: Url,
     svc: Mutex<BoxService<reqwest::Request, reqwest::Response, BoxError>>,
@@ -35,34 +38,34 @@ impl AstrovaultClient {
         }
     }
 
-    #[tracing::instrument(skip(self))]
     pub async fn stats(&self, address: &str) -> Result<WalletStats> {
-        tracing::debug!("get wallet stats");
         self.request("/wallet/stats", address).await
     }
 
-    #[tracing::instrument(skip(self))]
     pub async fn tvl(&self, address: &str) -> Result<WalletTvl> {
-        tracing::debug!("get wallet tlv");
         self.request("/wallet/tvl", address).await
     }
 
-    async fn request<R>(&self, path: &str, address: &str) -> Result<R>
+    #[tracing::instrument(skip(self))]
+    async fn request<R>(&self, endpoint: &str, address: &str) -> Result<R>
     where
         R: serde::de::DeserializeOwned,
     {
         let url = self
             .url
-            .join(format!("{path}?address={address}").as_str())?;
+            .join(format!("{endpoint}?address={address}").as_str())?;
 
         let mut svc = self.svc.lock().await;
         let client = svc.ready().await.map_err(|err| anyhow!(err))?;
 
+        tracing::debug!("executing request");
         let request = reqwest::Request::new(reqwest::Method::GET, url);
         let response = client.call(request).await.map_err(|err| anyhow!(err))?;
-        let body = response.json::<R>().await?;
+        tracing::debug!(?response, "got response");
 
-        Ok(body)
+        let json = response.json::<R>().await?;
+
+        Ok(json)
     }
 }
 
