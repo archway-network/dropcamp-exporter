@@ -3,27 +3,25 @@ use std::{path::PathBuf, sync::Arc};
 use anyhow::*;
 use url::Url;
 
-use crate::{clients::CosmosClient, csv};
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Chain {
-    pub id: String,
-    pub denom: String,
-}
+use crate::{
+    clients::{AstrovaultClient, CosmosClient},
+    csv,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Endpoint {
     pub url: Url,
     pub req_second: Option<u64>,
+    pub api_key: Option<String>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Context {
-    pub chain: Chain,
     pub soulbound_address: String,
     pub archid_address: String,
     pub liquid_finance_address: String,
     pub cosmos: Arc<CosmosClient>,
+    pub astrovault: Arc<AstrovaultClient>,
     output: PathBuf,
 }
 
@@ -43,23 +41,22 @@ impl Context {
 
 #[derive(Default)]
 pub struct ContextBuilder {
-    chain: Option<Chain>,
     rpc: Option<Endpoint>,
     height: Option<u64>,
     soulbound_address: Option<String>,
     archid_address: Option<String>,
     liquid_finance_address: Option<String>,
+    astrovault: Option<Endpoint>,
     output: Option<PathBuf>,
 }
 
 impl ContextBuilder {
-    pub fn chain(mut self, id: String, denom: String) -> Self {
-        self.chain = Some(Chain { id, denom });
-        self
-    }
-
     pub fn rpc(mut self, url: Url, req_second: Option<u64>) -> Self {
-        self.rpc = Some(Endpoint { url, req_second });
+        self.rpc = Some(Endpoint {
+            url,
+            req_second,
+            api_key: None,
+        });
         self
     }
 
@@ -83,14 +80,26 @@ impl ContextBuilder {
         self
     }
 
+    pub fn astrovault(
+        mut self,
+        url: Url,
+        req_second: Option<u64>,
+        api_key: Option<String>,
+    ) -> Self {
+        self.astrovault = Some(Endpoint {
+            url,
+            req_second,
+            api_key,
+        });
+        self
+    }
+
     pub fn output(mut self, output: PathBuf) -> Self {
         self.output = Some(output);
         self
     }
 
     pub async fn build(self) -> Result<Context> {
-        let chain = self.chain.ok_or(anyhow!("missing network in config"))?;
-        let rpc = self.rpc.ok_or(anyhow!("missing rpc in config"))?;
         let soulbound_address = self
             .soulbound_address
             .ok_or(anyhow!("missing soulbound address"))?;
@@ -102,14 +111,25 @@ impl ContextBuilder {
             .ok_or(anyhow!("missing liquid finance address"))?;
         let output = self.output.ok_or(anyhow!("missing output directory"))?;
 
+        let rpc = self.rpc.ok_or(anyhow!("missing rpc arguments"))?;
         let cosmos = CosmosClient::new(rpc.url, rpc.req_second, self.height).await?;
 
+        let av_endpoint = self
+            .astrovault
+            .clone()
+            .ok_or(anyhow!("missing astrovault arguments"))?;
+        let astrovault = AstrovaultClient::builder(av_endpoint.url.clone())
+            .req_second(av_endpoint.req_second)
+            .api_key(av_endpoint.api_key.clone())
+            .build()
+            .await?;
+
         let ctx = Context {
-            chain,
             soulbound_address,
             archid_address,
             liquid_finance_address,
             cosmos: Arc::new(cosmos),
+            astrovault: Arc::new(astrovault),
             output,
         };
 
