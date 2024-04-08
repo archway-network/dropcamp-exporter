@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use async_trait::async_trait;
-use futures::{future, stream, StreamExt, TryStreamExt};
+use futures::prelude::*;
 
 use crate::prelude::*;
 
@@ -29,29 +29,19 @@ pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
         Box::new(astrovault::Astrovault::create(ctx.clone()).await?),
     ];
 
-    let tasks = exporters
-        .iter()
-        .map(|exporter| export(exporter, addresses))
-        .collect::<Vec<_>>();
-
-    future::try_join_all(tasks).await?;
-
-    tracing::info!("data export finished");
-
-    Ok(())
-}
-
-#[allow(clippy::borrowed_box)]
-#[tracing::instrument(skip_all)]
-async fn export<T>(exporter: &Box<T>, addresses: &HashSet<String>) -> Result<()>
-where
-    T: Exporter + ?Sized,
-{
-    stream::iter(addresses.iter())
-        .map(|address| exporter.export(address.as_str()))
-        .buffer_unordered(10)
+    let results = stream::iter(addresses.iter())
+        .map(|address| {
+            let tasks: Vec<_> = exporters
+                .iter()
+                .map(|exporter| exporter.export(address))
+                .collect();
+            future::join_all(tasks).map(|_| Ok(()))
+        })
+        .buffer_unordered(32)
         .try_collect::<Vec<_>>()
         .await?;
+
+    tracing::info!("data export finished for {} addresses", results.len());
 
     Ok(())
 }
