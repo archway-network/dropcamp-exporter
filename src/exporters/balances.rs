@@ -39,6 +39,8 @@ impl Exporter for Balances {
 
         self.csv.write(assets).await?;
 
+        tracing::info!("balance export finished");
+
         Ok(())
     }
 }

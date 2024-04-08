@@ -53,6 +53,8 @@ impl Exporter for Delegations {
 
         self.csv.write(active_delegations).await?;
 
+        tracing::info!("delegations export finished");
+
         Ok(())
     }
 }

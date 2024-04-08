@@ -23,7 +23,7 @@ impl LiquidFinance {
 impl Exporter for LiquidFinance {
     #[tracing::instrument(skip(self))]
     async fn export(&self, address: &str) -> Result<()> {
-        tracing::info!("exporting ArchID domains");
+        tracing::info!("exporting Liquid Finance's sARCH balance");
 
         let balance = self.liquid.get_balance(address.to_string()).await?;
         let assets = AddressBalance {
@@ -32,6 +32,8 @@ impl Exporter for LiquidFinance {
         };
 
         self.csv.write(assets).await?;
+
+        tracing::info!("Liquid Finance's sARCH balance export finished");
 
         Ok(())
     }

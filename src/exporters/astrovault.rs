@@ -35,6 +35,8 @@ impl Exporter for Astrovault {
 
         self.csv.write(position).await?;
 
+        tracing::info!("Astrovault stats and tvl export finished");
+
         Ok(())
     }
 }

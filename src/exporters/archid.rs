@@ -33,6 +33,8 @@ impl Exporter for ArchId {
 
         self.csv.write(assets).await?;
 
+        tracing::info!("ArchID domains export finished");
+
         Ok(())
     }
 }
