@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use async_trait::async_trait;
 
 use crate::prelude::*;
@@ -24,9 +22,10 @@ impl Patches {
         })
     }
 
-    pub async fn all_tokens(&self) -> Result<HashSet<String>> {
+    pub async fn all_tokens(&self) -> Result<Vec<String>> {
         let tokens = self.soulbound_token.all_tokens().await?;
-        Ok(tokens)
+        let owners = tokens.iter().map(|token| token.owner.clone()).collect();
+        Ok(owners)
     }
 }
 

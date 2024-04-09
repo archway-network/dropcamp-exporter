@@ -1,5 +1,3 @@
-use std::{collections::HashSet, sync::Arc};
-
 use futures::stream::{self, StreamExt, TryStreamExt};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -13,6 +11,13 @@ pub struct Extension {
     pub social_score: u64,
 }
 
+#[derive(Clone, Debug)]
+pub struct TokenInfo {
+    pub id: String,
+    pub owner: String,
+    pub social_score: u64,
+}
+
 pub struct SoulboundToken {
     ctx: Arc<Context>,
 }
@@ -22,10 +27,10 @@ impl SoulboundToken {
         Self { ctx }
     }
 
-    pub async fn all_tokens(&self) -> Result<HashSet<String>> {
+    pub async fn all_tokens(&self) -> Result<Vec<TokenInfo>> {
         tracing::info!(%self.ctx.soulbound_address, "querying soulbound token owners");
 
-        let mut all_owners: HashSet<String> = HashSet::new();
+        let mut all_owners: Vec<TokenInfo> = Vec::new();
         let mut start_after: Option<String> = None;
         let limit = 100;
 
@@ -42,8 +47,8 @@ impl SoulboundToken {
 
             start_after = response.tokens.last().cloned();
 
-            let owners: HashSet<String> = stream::iter(response.tokens)
-                .map(|token_id| self.all_nft_info(token_id))
+            let owners: Vec<TokenInfo> = stream::iter(response.tokens)
+                .map(|token_id| self.token_info(token_id))
                 .buffer_unordered(10)
                 .try_collect()
                 .await?;
@@ -60,23 +65,29 @@ impl SoulboundToken {
         Ok(all_owners)
     }
 
-    async fn all_nft_info(&self, token_id: String) -> Result<String> {
+    async fn token_info(&self, token_id: String) -> Result<TokenInfo> {
         tracing::debug!(%token_id, "querying soulbound token owner");
 
         let query = cw721::Cw721QueryMsg::AllNftInfo {
-            token_id,
+            token_id: token_id.clone(),
             include_expired: Some(true),
         };
 
         let response: cw721::AllNftInfoResponse<Extension> = self.query_contract(&query).await?;
+        let token = TokenInfo {
+            id: token_id,
+            owner: response.access.owner,
+            social_score: response.info.extension.social_score,
+        };
 
         tracing::debug!(
-            owner = response.access.owner,
-            social_score = response.info.extension.social_score,
+            id = token.id,
+            owner = token.owner,
+            social_score = token.social_score,
             "found soulbound token"
         );
 
-        Ok(response.access.owner)
+        Ok(token)
     }
 
     async fn query_contract<T, R>(&self, data: &T) -> Result<R>
