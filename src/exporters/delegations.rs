@@ -22,7 +22,7 @@ impl Delegations {
 
 #[async_trait]
 impl Exporter for Delegations {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting delegations");
 

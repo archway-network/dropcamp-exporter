@@ -22,7 +22,7 @@ impl LiquidFinance {
 
 #[async_trait]
 impl Exporter for LiquidFinance {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting Liquid Finance's sARCH balance");
 

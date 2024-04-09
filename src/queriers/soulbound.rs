@@ -8,14 +8,15 @@ use crate::prelude::*;
 pub struct Extension {
     pub id: String,
     pub description: String,
-    pub social_score: u64,
+    pub social_score: u16,
 }
 
 #[derive(Clone, Debug)]
 pub struct TokenInfo {
     pub id: String,
+    pub name: String,
     pub owner: String,
-    pub social_score: u64,
+    pub social_score: u16,
 }
 
 pub struct SoulboundToken {
@@ -76,12 +77,14 @@ impl SoulboundToken {
         let response: cw721::AllNftInfoResponse<Extension> = self.query_contract(&query).await?;
         let token = TokenInfo {
             id: token_id,
+            name: response.info.extension.id,
             owner: response.access.owner,
             social_score: response.info.extension.social_score,
         };
 
         tracing::debug!(
             id = token.id,
+            name = token.name,
             owner = token.owner,
             social_score = token.social_score,
             "found soulbound token"

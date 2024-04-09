@@ -30,18 +30,19 @@ impl Patches {
 
 #[async_trait]
 impl Exporter for Patches {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting soulbound patches");
 
-        // let assets = AddressPatch {
-        //     address: address.to_string(),
-        //     patch_name,
-        //     social_score,
-        //     ranking,
-        // };
-        //
-        // self.csv.write(assets).await?;
+        let assets = AddressPatch {
+            address: token.owner.clone(),
+            patch_name: token.name.clone(),
+            social_score: token.social_score,
+            // TODO: calculate the ranking
+            ranking: 0.0,
+        };
+
+        self.csv.write(assets).await?;
 
         tracing::info!("soulbound patches export finished");
 
@@ -52,8 +53,8 @@ impl Exporter for Patches {
 pub struct AddressPatch {
     address: String,
     patch_name: String,
-    social_score: u64,
-    ranking: f64,
+    social_score: u16,
+    ranking: f32,
 }
 
 impl csv::Item for AddressPatch {
