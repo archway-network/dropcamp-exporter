@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
 use crate::prelude::*;
-use crate::queriers::soulbound::SoulboundToken;
+use crate::queriers::soulbound::{SoulboundToken, TokenInfo};
 use crate::{csv, Context};
 
 use super::Exporter;
@@ -22,17 +22,16 @@ impl Patches {
         })
     }
 
-    pub async fn all_tokens(&self) -> Result<Vec<String>> {
+    pub async fn all_tokens(&self) -> Result<Vec<TokenInfo>> {
         let tokens = self.soulbound_token.all_tokens().await?;
-        let owners = tokens.iter().map(|token| token.owner.clone()).collect();
-        Ok(owners)
+        Ok(tokens)
     }
 }
 
 #[async_trait]
 impl Exporter for Patches {
     #[tracing::instrument(skip(self))]
-    async fn export(&self, address: &str) -> Result<()> {
+    async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting soulbound patches");
 
         // let assets = AddressPatch {

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use futures::prelude::*;
 
-use crate::prelude::*;
+use crate::{prelude::*, queriers::soulbound::TokenInfo};
 
 mod archid;
 mod astrovault;
@@ -12,7 +12,7 @@ mod patches;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
-    async fn export(&self, address: &str) -> Result<()>;
+    async fn export(&self, token: &TokenInfo) -> Result<()>;
 }
 
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
@@ -20,11 +20,11 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
 
     ctx.create_output_folder()?;
 
-    let patches_exporter = Box::new(patches::Patches::create(ctx.clone()).await?);
+    let patches_exporter = patches::Patches::create(ctx.clone()).await?;
     let addresses = patches_exporter.all_tokens().await?;
 
     let exporters: Vec<Box<dyn Exporter>> = vec![
-        patches_exporter,
+        Box::new(patches_exporter),
         Box::new(balances::Balances::create(ctx.clone()).await?),
         Box::new(delegations::Delegations::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),

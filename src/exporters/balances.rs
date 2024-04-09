@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 
 use crate::prelude::*;
+use crate::queriers::soulbound::TokenInfo;
 use crate::{csv, Context};
 
 use super::Exporter;
@@ -22,10 +23,10 @@ impl Balances {
 #[async_trait]
 impl Exporter for Balances {
     #[tracing::instrument(skip(self))]
-    async fn export(&self, address: &str) -> Result<()> {
+    async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting all balances");
 
-        let response = self.ctx.cosmos.bank.balances(address.to_string()).await?;
+        let response = self.ctx.cosmos.bank.balances(token.owner.clone()).await?;
         let balances: HashMap<String, String> = response
             .balances
             .into_iter()
@@ -33,7 +34,7 @@ impl Exporter for Balances {
             .collect();
 
         let assets = AddressBalances {
-            address: address.to_string(),
+            address: token.owner.clone(),
             balances,
         };
 

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 
 use crate::prelude::*;
+use crate::queriers::soulbound::TokenInfo;
 use crate::{csv, Context};
 
 use super::Exporter;
@@ -22,14 +23,14 @@ impl Delegations {
 #[async_trait]
 impl Exporter for Delegations {
     #[tracing::instrument(skip(self))]
-    async fn export(&self, address: &str) -> Result<()> {
+    async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting delegations");
 
         let response = self
             .ctx
             .cosmos
             .staking
-            .delegations(address.to_string())
+            .delegations(token.owner.clone())
             .await?;
 
         let delegations: HashMap<String, String> = response
@@ -47,7 +48,7 @@ impl Exporter for Delegations {
             .collect();
 
         let active_delegations = ActiveDelegations {
-            address: address.to_string(),
+            address: token.owner.clone(),
             delegations,
         };
 

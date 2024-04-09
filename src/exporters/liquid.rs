@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
 use crate::prelude::*;
+use crate::queriers::soulbound::TokenInfo;
 use crate::{csv, queriers::liquid::LiquidFinanceCw20, Context};
 
 use super::Exporter;
@@ -22,12 +23,12 @@ impl LiquidFinance {
 #[async_trait]
 impl Exporter for LiquidFinance {
     #[tracing::instrument(skip(self))]
-    async fn export(&self, address: &str) -> Result<()> {
+    async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting Liquid Finance's sARCH balance");
 
-        let balance = self.liquid.get_balance(address.to_string()).await?;
+        let balance = self.liquid.get_balance(token.owner.clone()).await?;
         let assets = AddressBalance {
-            address: address.to_string(),
+            address: token.owner.clone(),
             balance,
         };
 
