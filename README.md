@@ -85,6 +85,7 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 ├── 📄 balances.csv
 ├── 📄 delegations.csv
 └── 📄 liquid-finance.csv
+└── 📄 socials.csv
 ```
 
 ### Schema
@@ -123,5 +124,11 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 
 #### `liquid-finance.csv`
 
-- `address`: wallet address
+- `address` (`string`): wallet address
 - `balance` (`bigint`): total `sARCH` balance
+
+#### `socials.csv`
+
+- `address` (`string`): wallet address
+- `patch_name` (`string`): name of the drop camp patch associated with the score
+- `social_score` (`integer`): score based on user activity in socials
