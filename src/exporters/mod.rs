@@ -8,7 +8,7 @@ mod astrovault;
 mod balances;
 mod delegations;
 mod liquid;
-mod patches;
+mod socials;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
@@ -20,11 +20,11 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
 
     ctx.create_output_folder()?;
 
-    let patches_exporter = patches::Patches::create(ctx.clone()).await?;
-    let tokens = patches_exporter.all_tokens().await?;
+    let socials_exporter = socials::Socials::create(ctx.clone()).await?;
+    let tokens = socials_exporter.all_tokens().await?;
 
     let exporters: Vec<Box<dyn Exporter>> = vec![
-        Box::new(patches_exporter),
+        Box::new(socials_exporter),
         Box::new(balances::Balances::create(ctx.clone()).await?),
         Box::new(delegations::Delegations::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),

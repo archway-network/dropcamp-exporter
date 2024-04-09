@@ -6,14 +6,15 @@ use crate::{csv, Context};
 
 use super::Exporter;
 
-pub struct Patches {
-    csv: csv::Writer<AddressPatch>,
+pub struct Socials {
+    csv: csv::Writer<AddressSocialPatch>,
     soulbound_token: SoulboundToken,
 }
 
-impl Patches {
+impl Socials {
     pub async fn create(ctx: Arc<Context>) -> Result<Self> {
-        let csv = ctx.csv_writer("patches").await?;
+        let csv = ctx.csv_writer("socials").await?;
+
         let soulbound_token = SoulboundToken::new(ctx.clone());
 
         Ok(Self {
@@ -29,12 +30,12 @@ impl Patches {
 }
 
 #[async_trait]
-impl Exporter for Patches {
+impl Exporter for Socials {
     #[tracing::instrument(skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting soulbound patches");
 
-        let assets = AddressPatch {
+        let assets = AddressSocialPatch {
             address: token.owner.clone(),
             patch_name: token.name.clone(),
             social_score: token.social_score,
@@ -50,14 +51,14 @@ impl Exporter for Patches {
     }
 }
 
-pub struct AddressPatch {
+pub struct AddressSocialPatch {
     address: String,
     patch_name: String,
     social_score: u16,
     ranking: f32,
 }
 
-impl csv::Item for AddressPatch {
+impl csv::Item for AddressSocialPatch {
     fn header() -> csv::Header {
         vec!["address", "patch_name", "social_score", "ranking"]
     }
