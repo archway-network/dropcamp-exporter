@@ -1,6 +1,7 @@
 mod app;
 mod block;
 mod clients;
+mod config;
 mod context;
 mod csv;
 mod exporters;

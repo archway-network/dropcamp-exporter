@@ -5,6 +5,7 @@ use url::Url;
 
 use crate::{
     clients::{AstrovaultClient, CosmosClient},
+    config::Ranking,
     csv,
 };
 
@@ -22,6 +23,7 @@ pub struct Context {
     pub liquid_finance_address: String,
     pub cosmos: Arc<CosmosClient>,
     pub astrovault: Arc<AstrovaultClient>,
+    pub ranking: Ranking,
     output: PathBuf,
 }
 
@@ -52,6 +54,7 @@ pub struct ContextBuilder {
     archid_address: Option<String>,
     liquid_finance_address: Option<String>,
     astrovault: Option<Endpoint>,
+    ranking_path: Option<PathBuf>,
     output: Option<PathBuf>,
 }
 
@@ -99,6 +102,11 @@ impl ContextBuilder {
         self
     }
 
+    pub fn ranking_path(mut self, ranking_path: PathBuf) -> Self {
+        self.ranking_path = Some(ranking_path);
+        self
+    }
+
     pub fn output(mut self, output: PathBuf) -> Self {
         self.output = Some(output);
         self
@@ -129,12 +137,18 @@ impl ContextBuilder {
             .build()
             .await?;
 
+        let ranking_path = self
+            .ranking_path
+            .ok_or(anyhow!("missing ranking config file path"))?;
+        let ranking = Ranking::load(ranking_path)?;
+
         let ctx = Context {
             soulbound_address,
             archid_address,
             liquid_finance_address,
             cosmos: Arc::new(cosmos),
             astrovault: Arc::new(astrovault),
+            ranking,
             output,
         };
 
