@@ -21,7 +21,7 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
     ctx.create_output_folder()?;
 
     let patches_exporter = patches::Patches::create(ctx.clone()).await?;
-    let addresses = patches_exporter.all_tokens().await?;
+    let tokens = patches_exporter.all_tokens().await?;
 
     let exporters: Vec<Box<dyn Exporter>> = vec![
         Box::new(patches_exporter),
@@ -32,11 +32,11 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
         Box::new(astrovault::Astrovault::create(ctx.clone()).await?),
     ];
 
-    let results = stream::iter(addresses.iter())
-        .map(|address| {
+    let results = stream::iter(tokens.iter())
+        .map(|token| {
             let tasks: Vec<_> = exporters
                 .iter()
-                .map(|exporter| exporter.export(address))
+                .map(|exporter| exporter.export(token))
                 .collect();
             future::join_all(tasks).map(|_| Ok(()))
         })

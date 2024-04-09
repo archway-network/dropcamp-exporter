@@ -31,7 +31,7 @@ impl SoulboundToken {
     pub async fn all_tokens(&self) -> Result<Vec<TokenInfo>> {
         tracing::info!(%self.ctx.soulbound_address, "querying soulbound token owners");
 
-        let mut all_owners: Vec<TokenInfo> = Vec::new();
+        let mut all_tokens: Vec<TokenInfo> = Vec::new();
         let mut start_after: Option<String> = None;
         let limit = 100;
 
@@ -48,22 +48,22 @@ impl SoulboundToken {
 
             start_after = response.tokens.last().cloned();
 
-            let owners: Vec<TokenInfo> = stream::iter(response.tokens)
+            let tokens: Vec<TokenInfo> = stream::iter(response.tokens)
                 .map(|token_id| self.token_info(token_id))
                 .buffer_unordered(10)
                 .try_collect()
                 .await?;
 
-            all_owners.extend(owners);
+            all_tokens.extend(tokens);
 
             if count < 100 {
                 break;
             }
         }
 
-        tracing::info!(count = all_owners.len(), "total soulbound token owners");
+        tracing::info!(count = all_tokens.len(), "total soulbound token owners");
 
-        Ok(all_owners)
+        Ok(all_tokens)
     }
 
     async fn token_info(&self, token_id: String) -> Result<TokenInfo> {
