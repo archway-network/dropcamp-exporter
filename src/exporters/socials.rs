@@ -8,17 +8,18 @@ use super::Exporter;
 
 pub struct Socials {
     csv: csv::Writer<AddressSocialPatch>,
+    ctx: Arc<Context>,
     soulbound_token: SoulboundToken,
 }
 
 impl Socials {
     pub async fn create(ctx: Arc<Context>) -> Result<Self> {
         let csv = ctx.csv_writer("socials").await?;
-
         let soulbound_token = SoulboundToken::new(ctx.clone());
 
         Ok(Self {
             csv,
+            ctx,
             soulbound_token,
         })
     }
@@ -35,12 +36,13 @@ impl Exporter for Socials {
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting soulbound patches");
 
+        let ranking = self.ctx.ranking.social.weighted_ranking(token.social_score);
+
         let assets = AddressSocialPatch {
             address: token.owner.clone(),
             patch_name: token.name.clone(),
             social_score: token.social_score,
-            // TODO: calculate the ranking
-            ranking: 0.0,
+            ranking,
         };
 
         self.csv.write(assets).await?;
@@ -55,20 +57,20 @@ pub struct AddressSocialPatch {
     address: String,
     patch_name: String,
     social_score: u16,
-    ranking: f32,
+    ranking: f64,
 }
 
 impl csv::Item for AddressSocialPatch {
     fn header() -> csv::Header {
-        vec!["address", "patch_name", "social_score", "ranking"]
+        vec!["address", "ranking", "patch_name", "social_score"]
     }
 
     fn rows(self) -> Vec<csv::Row> {
         vec![vec![
             self.address.clone(),
+            format!("{:.2}", self.ranking),
             self.patch_name.clone(),
             self.social_score.to_string(),
-            self.ranking.to_string(),
         ]]
     }
 }
