@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use async_trait::async_trait;
 use futures::prelude::*;
 
@@ -10,18 +8,23 @@ mod astrovault;
 mod balances;
 mod delegations;
 mod liquid;
+mod patches;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
     async fn export(&self, address: &str) -> Result<()>;
 }
 
-pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
+pub async fn run(ctx: Arc<Context>) -> Result<()> {
     tracing::info!("starting data export");
 
     ctx.create_output_folder()?;
 
+    let patches_exporter = Box::new(patches::Patches::create(ctx.clone()).await?);
+    let addresses = patches_exporter.all_tokens().await?;
+
     let exporters: Vec<Box<dyn Exporter>> = vec![
+        patches_exporter,
         Box::new(balances::Balances::create(ctx.clone()).await?),
         Box::new(delegations::Delegations::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),
