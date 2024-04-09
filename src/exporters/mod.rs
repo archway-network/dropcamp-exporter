@@ -33,13 +33,7 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
     ];
 
     let results = stream::iter(tokens.iter())
-        .map(|token| {
-            let tasks: Vec<_> = exporters
-                .iter()
-                .map(|exporter| exporter.export(token))
-                .collect();
-            future::join_all(tasks).map(|_| Ok(()))
-        })
+        .flat_map(|token| stream::iter(exporters.iter()).map(|exporter| exporter.export(token)))
         .buffer_unordered(32)
         .try_collect::<Vec<_>>()
         .await?;
