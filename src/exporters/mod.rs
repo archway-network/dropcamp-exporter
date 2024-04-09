@@ -1,27 +1,30 @@
-use std::collections::HashSet;
-
 use async_trait::async_trait;
-use futures::{future, stream, StreamExt, TryStreamExt};
+use futures::prelude::*;
 
-use crate::prelude::*;
+use crate::{prelude::*, queriers::soulbound::TokenInfo};
 
 mod archid;
 mod astrovault;
 mod balances;
 mod delegations;
 mod liquid;
+mod socials;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
-    async fn export(&self, address: &str) -> Result<()>;
+    async fn export(&self, token: &TokenInfo) -> Result<()>;
 }
 
-pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
+pub async fn run(ctx: Arc<Context>) -> Result<()> {
     tracing::info!("starting data export");
 
     ctx.create_output_folder()?;
 
+    let socials_exporter = socials::Socials::create(ctx.clone()).await?;
+    let tokens = socials_exporter.all_tokens().await?;
+
     let exporters: Vec<Box<dyn Exporter>> = vec![
+        Box::new(socials_exporter),
         Box::new(balances::Balances::create(ctx.clone()).await?),
         Box::new(delegations::Delegations::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),
@@ -29,29 +32,19 @@ pub async fn run(ctx: Arc<Context>, addresses: &HashSet<String>) -> Result<()> {
         Box::new(astrovault::Astrovault::create(ctx.clone()).await?),
     ];
 
-    let tasks = exporters
-        .iter()
-        .map(|exporter| export(exporter, addresses))
-        .collect::<Vec<_>>();
-
-    future::try_join_all(tasks).await?;
-
-    tracing::info!("data export finished");
-
-    Ok(())
-}
-
-#[allow(clippy::borrowed_box)]
-#[tracing::instrument(skip_all)]
-async fn export<T>(exporter: &Box<T>, addresses: &HashSet<String>) -> Result<()>
-where
-    T: Exporter + ?Sized,
-{
-    stream::iter(addresses.iter())
-        .map(|address| exporter.export(address.as_str()))
-        .buffer_unordered(10)
+    let results = stream::iter(tokens.iter())
+        .map(|token| {
+            let tasks: Vec<_> = exporters
+                .iter()
+                .map(|exporter| exporter.export(token))
+                .collect();
+            future::join_all(tasks).map(|_| Ok(()))
+        })
+        .buffer_unordered(32)
         .try_collect::<Vec<_>>()
         .await?;
+
+    tracing::info!("data export finished for {} addresses", results.len());
 
     Ok(())
 }

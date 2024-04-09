@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::{csv, prelude::*};
+use crate::{csv, prelude::*, queriers::soulbound::TokenInfo};
 
 use super::Exporter;
 
@@ -19,21 +19,23 @@ impl Astrovault {
 
 #[async_trait]
 impl Exporter for Astrovault {
-    #[tracing::instrument(skip(self))]
-    async fn export(&self, address: &str) -> Result<()> {
+    #[tracing::instrument(skip_all, fields(address = token.owner))]
+    async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting Astrovault stats and tvl");
 
-        let stats = self.ctx.astrovault.stats(address).await?;
-        let tvl = self.ctx.astrovault.tvl(address).await?;
+        let stats = self.ctx.astrovault.stats(token.owner.as_str()).await?;
+        let tvl = self.ctx.astrovault.tvl(token.owner.as_str()).await?;
 
         let position = AstrovaultPosition {
-            address: address.to_string(),
+            address: token.owner.clone(),
             has_lpd: stats.has_lpd,
             has_traded: stats.has_traded,
             tvl: tvl.tvl,
         };
 
         self.csv.write(position).await?;
+
+        tracing::info!("Astrovault stats and tvl export finished");
 
         Ok(())
     }

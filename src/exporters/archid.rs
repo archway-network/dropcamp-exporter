@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
 use crate::prelude::*;
+use crate::queriers::soulbound::TokenInfo;
 use crate::{csv, queriers::archid::ArchIdRegistry, Context};
 
 use super::Exporter;
@@ -21,17 +22,19 @@ impl ArchId {
 
 #[async_trait]
 impl Exporter for ArchId {
-    #[tracing::instrument(skip(self))]
-    async fn export(&self, address: &str) -> Result<()> {
+    #[tracing::instrument(skip_all, fields(address = token.owner))]
+    async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting ArchID domains");
 
-        let names = self.archid.resolve_domains(address.to_string()).await?;
+        let names = self.archid.resolve_domains(token.owner.clone()).await?;
         let assets = AddressNames {
-            address: address.to_string(),
+            address: token.owner.clone(),
             names,
         };
 
         self.csv.write(assets).await?;
+
+        tracing::info!("ArchID domains export finished");
 
         Ok(())
     }
