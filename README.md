@@ -83,9 +83,9 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 ├── 📄 archid.csv
 ├── 📄 astrovault.csv
 ├── 📄 balances.csv
-├── 📄 delegations.csv
-└── 📄 liquid-finance.csv
-└── 📄 socials.csv
+├── 📄 liquid-finance.csv
+├── 📄 socials.csv
+└── 📄 staking.csv
 ```
 
 ### Schema
@@ -112,16 +112,6 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 > [!NOTE]  
 > The `address` might appear multiple times, one for each `denom` it has.
 
-#### `delegations.csv`
-
-- `address` (`string`): wallet address
-- `validator` (`string`): validator address
-- `amount` (`bigint`): delegated amount
-
-> [!NOTE]  
-> The `address` might appear multiple times, one for each `validator` it
-> delegates to.
-
 #### `liquid-finance.csv`
 
 - `address` (`string`): wallet address
@@ -130,5 +120,13 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 #### `socials.csv`
 
 - `address` (`string`): wallet address
+- `ranking` (`float`): ranking percentage for this activity
 - `patch_name` (`string`): name of the drop camp patch associated with the score
 - `social_score` (`integer`): score based on user activity in socials
+
+#### `staking.csv`
+
+- `address` (`string`): wallet address
+- `ranking` (`float`): ranking percentage for this activity
+- `delegated` (`float`): delegated amount rounded to 2 decimals
+- `validators` (`string`): validator addresses separated by `,`
