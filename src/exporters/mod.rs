@@ -32,13 +32,13 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
         Box::new(astrovault::Astrovault::create(ctx.clone()).await?),
     ];
 
-    let results = stream::iter(tokens.iter())
+    stream::iter(tokens.iter())
         .flat_map(|token| stream::iter(exporters.iter()).map(|exporter| exporter.export(token)))
         .buffer_unordered(32)
         .try_collect::<Vec<_>>()
         .await?;
 
-    tracing::info!("data export finished for {} addresses", results.len());
+    tracing::info!("data export finished");
 
     Ok(())
 }
