@@ -4,23 +4,22 @@ use anyhow::Result;
 use serde::Deserialize;
 
 pub const RANKING_FILE: &str = "ranking.toml";
-const MIN_RANKING_PERCENTAGE: f64 = 0.1;
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct ActivitiesGroup<T> {
-    pub weight: f64,
+    pub weight: f32,
     pub activities: T,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct Activity {
-    pub weight: f64,
+    pub weight: f32,
     pub goal: u32,
     pub curve: Curve,
 }
 
 impl Activity {
-    pub fn ranking(&self, score: f64) -> f64 {
+    pub fn ranking(&self, score: f64) -> f32 {
         let numerator = self.curve.numerator;
         let denominator = self.curve.denominator;
 
@@ -32,7 +31,7 @@ impl Activity {
         if ranking == 0.0 {
             0.0
         } else {
-            ranking.clamp(MIN_RANKING_PERCENTAGE, 100.0)
+            ranking.clamp(0.1, 100.0) as f32
         }
     }
 }
@@ -47,8 +46,8 @@ pub struct Curve {
 pub struct Social {}
 
 impl ActivitiesGroup<Option<Social>> {
-    pub fn weighted_ranking(&self, social_score: u16) -> f64 {
-        social_score as f64 * self.weight
+    pub fn weighted_ranking(&self, social_score: u16) -> f32 {
+        social_score as f32 * self.weight
     }
 }
 

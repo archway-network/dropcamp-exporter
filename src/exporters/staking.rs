@@ -91,7 +91,7 @@ pub struct ActiveDelegations {
     address: String,
     validators: Vec<String>,
     delegated: BigDecimal,
-    ranking: f64,
+    ranking: f32,
 }
 
 impl csv::Item for ActiveDelegations {
@@ -103,7 +103,7 @@ impl csv::Item for ActiveDelegations {
         vec![vec![
             self.address.clone(),
             format!("{:.2}", self.ranking),
-            format!("{}", self.delegated),
+            self.delegated.to_string(),
             self.validators.join(","),
         ]]
     }

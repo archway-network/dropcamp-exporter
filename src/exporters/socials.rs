@@ -7,8 +7,8 @@ use crate::{csv, Context};
 use super::Exporter;
 
 pub struct Socials {
-    csv: csv::Writer<AddressSocialPatch>,
     ctx: Arc<Context>,
+    csv: csv::Writer<AddressSocialPatch>,
     soulbound_token: SoulboundToken,
 }
 
@@ -57,7 +57,7 @@ pub struct AddressSocialPatch {
     address: String,
     patch_name: String,
     social_score: u16,
-    ranking: f64,
+    ranking: f32,
 }
 
 impl csv::Item for AddressSocialPatch {
