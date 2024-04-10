@@ -1,5 +1,5 @@
 use futures::stream::{self, StreamExt, TryStreamExt};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
@@ -42,7 +42,10 @@ impl SoulboundToken {
                 start_after,
                 limit: Some(limit),
             };
-            let response: cw721::TokensResponse = self.query_contract(&query).await?;
+            let response: cw721::TokensResponse = self
+                .ctx
+                .query_contract(self.ctx.soulbound_address.clone(), &query)
+                .await?;
             let count = response.tokens.len();
             tracing::info!(%count, "found soulbound tokens");
 
@@ -74,7 +77,10 @@ impl SoulboundToken {
             include_expired: Some(true),
         };
 
-        let response: cw721::AllNftInfoResponse<Extension> = self.query_contract(&query).await?;
+        let response: cw721::AllNftInfoResponse<Extension> = self
+            .ctx
+            .query_contract(self.ctx.soulbound_address.clone(), &query)
+            .await?;
         let token = TokenInfo {
             id: token_id,
             name: response.info.extension.id,
@@ -91,17 +97,5 @@ impl SoulboundToken {
         );
 
         Ok(token)
-    }
-
-    async fn query_contract<T, R>(&self, data: &T) -> Result<R>
-    where
-        T: Serialize + ?Sized,
-        R: DeserializeOwned,
-    {
-        self.ctx
-            .cosmos
-            .cosmwasm
-            .smart_contract_state(self.ctx.soulbound_address.clone(), data)
-            .await
     }
 }

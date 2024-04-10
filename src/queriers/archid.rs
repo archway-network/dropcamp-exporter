@@ -1,4 +1,4 @@
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
@@ -27,22 +27,13 @@ impl ArchIdRegistry {
         tracing::debug!(%self.ctx.archid_address, "resolving ArchID names for address");
 
         let query = QueryMsg::ResolveAddress { address };
-        let response: ResolveAddressResponse = self.query_contract(&query).await?;
+        let response: ResolveAddressResponse = self
+            .ctx
+            .query_contract(self.ctx.archid_address.clone(), &query)
+            .await?;
         let names = response.names.unwrap_or_default();
         tracing::debug!(count = names.len(), "found ArchID names");
 
         Ok(names)
-    }
-
-    async fn query_contract<T, R>(&self, data: &T) -> Result<R>
-    where
-        T: Serialize + ?Sized,
-        R: DeserializeOwned,
-    {
-        self.ctx
-            .cosmos
-            .cosmwasm
-            .smart_contract_state(self.ctx.archid_address.clone(), data)
-            .await
     }
 }
