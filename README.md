@@ -93,8 +93,9 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 #### `archid.csv`
 
 - `address` (`string`): wallet address
-- `domains` (`string`): list of domains separated by `,`
-- `total` (`integer`): total number of domains
+- `ranking` (`float`): ranking percentage for this activity
+- `domains` (`integer`): total number of domains
+- `names` (`string`): list of domain names separated by `,`
 
 #### `astrovault.csv`
 
