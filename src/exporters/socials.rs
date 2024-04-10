@@ -32,7 +32,7 @@ impl Socials {
 
 #[async_trait]
 impl Exporter for Socials {
-    #[tracing::instrument(skip_all, fields(address = token.owner))]
+    #[tracing::instrument(name = "social::export", skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting soulbound patches");
 

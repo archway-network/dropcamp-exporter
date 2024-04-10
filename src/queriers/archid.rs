@@ -22,7 +22,7 @@ impl ArchIdRegistry {
         Self { ctx }
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip_all)]
     pub async fn resolve_domains(&self, address: String) -> Result<Vec<String>> {
         tracing::debug!(%self.ctx.archid_address, "resolving ArchID names for address");
 

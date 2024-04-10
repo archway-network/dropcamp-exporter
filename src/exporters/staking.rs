@@ -23,7 +23,7 @@ impl Staking {
 
 #[async_trait]
 impl Exporter for Staking {
-    #[tracing::instrument(skip_all, fields(address = token.owner))]
+    #[tracing::instrument(name = "staking::export", skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting delegations");
 

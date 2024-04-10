@@ -43,7 +43,7 @@ impl LiquidFinanceCw20 {
         Ok(Self { ctx, token_info })
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip_all)]
     pub async fn balance(&self, address: String) -> Result<BigDecimal> {
         tracing::debug!(%self.ctx.liquid_finance_address, "fetching cw20 token balance");
 
@@ -60,6 +60,7 @@ impl LiquidFinanceCw20 {
         Ok(balance)
     }
 
+    #[tracing::instrument(skip_all)]
     async fn token_info(ctx: &Arc<Context>) -> Result<TokenInfoResponse> {
         let query = QueryMsg::TokenInfo {};
         ctx.query_contract(ctx.liquid_finance_address.clone(), &query)

@@ -28,6 +28,7 @@ impl SoulboundToken {
         Self { ctx }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn all_tokens(&self) -> Result<Vec<TokenInfo>> {
         tracing::info!(%self.ctx.soulbound_address, "querying soulbound token owners");
 
@@ -69,8 +70,9 @@ impl SoulboundToken {
         Ok(all_tokens)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn token_info(&self, token_id: String) -> Result<TokenInfo> {
-        tracing::debug!(%token_id, "querying soulbound token owner");
+        tracing::debug!("querying soulbound token owner");
 
         let query = cw721::Cw721QueryMsg::AllNftInfo {
             token_id: token_id.clone(),
@@ -89,7 +91,6 @@ impl SoulboundToken {
         };
 
         tracing::debug!(
-            id = token.id,
             name = token.name,
             owner = token.owner,
             social_score = token.social_score,

@@ -23,7 +23,7 @@ impl ArchId {
 
 #[async_trait]
 impl Exporter for ArchId {
-    #[tracing::instrument(skip_all, fields(address = token.owner))]
+    #[tracing::instrument(name = "archid::export", skip_all, fields(address = token.owner))]
     async fn export(&self, token: &TokenInfo) -> Result<()> {
         tracing::info!("exporting ArchID domains");
 
