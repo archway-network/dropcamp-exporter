@@ -1,7 +1,6 @@
-use std::path::PathBuf;
-
-use anyhow::Result;
 use serde::Deserialize;
+
+use super::ConfigLoader;
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct ActivitiesGroup<T> {
@@ -69,8 +68,4 @@ pub struct Ranking {
     pub ecosystem: ActivitiesGroup<Ecosystem>,
 }
 
-impl Ranking {
-    pub fn load(path: PathBuf) -> Result<Self> {
-        super::load(path)
-    }
-}
+impl<'de> ConfigLoader<'de> for Ranking {}

@@ -3,7 +3,9 @@ use std::{path::PathBuf, sync::Arc};
 use anyhow::*;
 use url::Url;
 
-use crate::{clients::*, config::Ranking, csv};
+use crate::clients::*;
+use crate::config::*;
+use crate::csv;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Endpoint {
