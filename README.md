@@ -117,7 +117,8 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 #### `liquid-finance.csv`
 
 - `address` (`string`): wallet address
-- `balance` (`bigint`): total `sARCH` balance
+- `ranking` (`float`): ranking percentage for this activity
+- `balance` (`bigint`): total `sARCH` balance rounded to 2 decimals
 
 #### `socials.csv`
 

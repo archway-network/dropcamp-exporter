@@ -44,6 +44,17 @@ impl Context {
         let path = self.output.join(name).with_extension("csv");
         csv::Writer::create(path).await
     }
+
+    pub async fn query_contract<T, R>(&self, address: String, data: &T) -> Result<R>
+    where
+        T: serde::Serialize + ?Sized,
+        R: serde::de::DeserializeOwned,
+    {
+        self.cosmos
+            .cosmwasm
+            .smart_contract_state(address, data)
+            .await
+    }
 }
 
 #[derive(Default)]
