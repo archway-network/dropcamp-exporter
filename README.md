@@ -100,6 +100,7 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 #### `astrovault.csv`
 
 - `address` (`string`): wallet address
+- `ranking` (`float`): ranking percentage for this activity
 - `has_lpd` (`bool`): flag if address has provided liquidity
 - `has_traded` (`bool`): flag if address has traded
 - `tvl` (`float`): total value locked
