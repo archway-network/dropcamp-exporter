@@ -11,6 +11,7 @@ const RPC_URL: &str = "https://rpc.mainnet.archway.io:443";
 const COINGECKO_URL: &str = "https://api.coingecko.com/api/v3";
 
 const RANKING_FILE: &str = "ranking.toml";
+const TOKEN_MAP_FILE: &str = "tokens.toml";
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -61,6 +62,10 @@ pub struct App {
     #[arg(long, default_value = RANKING_FILE)]
     pub ranking: PathBuf,
 
+    /// Path for a file containing the token denom mappings used to query CoinGecko.
+    #[arg(long, default_value = TOKEN_MAP_FILE)]
+    pub token_map: PathBuf,
+
     /// Directory path to output the CSV files.
     #[arg(short, long)]
     pub output: PathBuf,
@@ -85,6 +90,7 @@ impl App {
             )
             .coingecko(self.coingecko_url.clone())
             .ranking_path(self.ranking.clone())
+            .token_map_path(self.token_map.clone())
             .output(self.output.clone())
             .build()
             .await?;

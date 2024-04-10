@@ -23,6 +23,7 @@ pub struct Context {
     pub astrovault: Arc<AstrovaultClient>,
     pub coingecko: Arc<CoinGeckoClient>,
     pub ranking: Ranking,
+    pub token_map: TokenMap,
     output: PathBuf,
 }
 
@@ -66,6 +67,7 @@ pub struct ContextBuilder {
     astrovault: Option<Endpoint>,
     coingecko: Option<Endpoint>,
     ranking_path: Option<PathBuf>,
+    token_map_path: Option<PathBuf>,
     output: Option<PathBuf>,
 }
 
@@ -127,6 +129,11 @@ impl ContextBuilder {
         self
     }
 
+    pub fn token_map_path(mut self, token_map_path: PathBuf) -> Self {
+        self.token_map_path = Some(token_map_path);
+        self
+    }
+
     pub fn output(mut self, output: PathBuf) -> Self {
         self.output = Some(output);
         self
@@ -170,6 +177,11 @@ impl ContextBuilder {
             .ok_or(anyhow!("missing ranking config file path"))?;
         let ranking = Ranking::load(ranking_path)?;
 
+        let token_map_path = self
+            .token_map_path
+            .ok_or(anyhow!("missing token map config file path"))?;
+        let token_map = TokenMap::load(token_map_path)?;
+
         let ctx = Context {
             soulbound_address,
             archid_address,
@@ -178,6 +190,7 @@ impl ContextBuilder {
             astrovault: Arc::new(astrovault),
             coingecko: Arc::new(coingecko),
             ranking,
+            token_map,
             output,
         };
 

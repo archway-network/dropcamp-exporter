@@ -4,8 +4,10 @@ use config::Config;
 use serde::Deserialize;
 
 mod ranking;
+mod tokens;
 
 pub use ranking::Ranking;
+pub use tokens::TokenMap;
 
 pub trait ConfigLoader<'de>: std::fmt::Debug + Deserialize<'de> + Sized {
     fn load(path: PathBuf) -> anyhow::Result<Self> {
