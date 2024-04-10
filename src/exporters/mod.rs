@@ -6,9 +6,9 @@ use crate::{prelude::*, queriers::soulbound::TokenInfo};
 mod archid;
 mod astrovault;
 mod balances;
-mod delegations;
 mod liquid;
 mod socials;
+mod staking;
 
 #[async_trait]
 pub trait Exporter: Sync + Send {
@@ -26,7 +26,7 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let exporters: Vec<Box<dyn Exporter>> = vec![
         Box::new(socials_exporter),
         Box::new(balances::Balances::create(ctx.clone()).await?),
-        Box::new(delegations::Delegations::create(ctx.clone()).await?),
+        Box::new(staking::Staking::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),
         Box::new(liquid::LiquidFinance::create(ctx.clone()).await?),
         Box::new(astrovault::Astrovault::create(ctx.clone()).await?),

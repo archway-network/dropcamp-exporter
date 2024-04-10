@@ -19,6 +19,24 @@ pub struct Activity {
     pub curve: Curve,
 }
 
+impl Activity {
+    pub fn ranking(&self, score: f64) -> f64 {
+        let numerator = self.curve.numerator;
+        let denominator = self.curve.denominator;
+
+        // Michaelis-Menten hyperbolic curve
+        // y = (numerator * x) / (denominator + x)
+        let ranking = (numerator * score) / (denominator + score);
+        tracing::debug!(score, numerator, denominator, ranking, "ranking calculated");
+
+        if ranking == 0.0 {
+            0.0
+        } else {
+            ranking.clamp(MIN_RANKING_PERCENTAGE, 100.0)
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct Curve {
     pub numerator: f64,
