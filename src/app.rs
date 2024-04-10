@@ -50,6 +50,10 @@ pub struct App {
     #[arg(long)]
     pub astrovault_api_key: Option<String>,
 
+    /// Path for the ranking config file.
+    #[arg(long, default_value = crate::config::RANKING_FILE)]
+    pub ranking: PathBuf,
+
     /// Directory path to output the CSV files.
     #[arg(short, long)]
     pub output: PathBuf,
@@ -72,6 +76,7 @@ impl App {
                 self.astrovault_req_second,
                 self.astrovault_api_key.clone(),
             )
+            .ranking_path(self.ranking.clone())
             .output(self.output.clone())
             .build()
             .await?;

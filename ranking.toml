@@ -1,0 +1,33 @@
+[social]
+weight = 0.48
+
+[archway]
+weight = 0.32
+
+[archway.activities.ibc]
+weight = 0.5
+goal   = 50_000
+curve  = { numerator = 108.5714, denominator = 4_285.714 }
+
+[archway.activities.stake]
+weight = 0.5
+goal   = 205_882
+curve  = { numerator = 111.1111, denominator = 22_875.52 }
+
+[ecosystem]
+weight = 0.2
+
+[ecosystem.activities.archid]
+weight = 0.5
+goal   = 10
+curve  = { numerator = 133.3333, denominator = 3.3333 }
+
+[ecosystem.activities.astrovault]
+weight = 0.5
+goal   = 25_000
+curve  = { numerator = 106.6667, denominator = 1_666.667 }
+
+[ecosystem.activities.liquid_finance]
+weight = 0
+goal   = 10_000
+curve  = { numerator = 133.3333, denominator = 3_333.3333 }

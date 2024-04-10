@@ -1,5 +1,5 @@
 use futures::stream::{self, StreamExt, TryStreamExt};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
@@ -28,6 +28,7 @@ impl SoulboundToken {
         Self { ctx }
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn all_tokens(&self) -> Result<Vec<TokenInfo>> {
         tracing::info!(%self.ctx.soulbound_address, "querying soulbound token owners");
 
@@ -42,7 +43,10 @@ impl SoulboundToken {
                 start_after,
                 limit: Some(limit),
             };
-            let response: cw721::TokensResponse = self.query_contract(&query).await?;
+            let response: cw721::TokensResponse = self
+                .ctx
+                .query_contract(self.ctx.soulbound_address.clone(), &query)
+                .await?;
             let count = response.tokens.len();
             tracing::info!(%count, "found soulbound tokens");
 
@@ -66,15 +70,19 @@ impl SoulboundToken {
         Ok(all_tokens)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn token_info(&self, token_id: String) -> Result<TokenInfo> {
-        tracing::debug!(%token_id, "querying soulbound token owner");
+        tracing::debug!("querying soulbound token owner");
 
         let query = cw721::Cw721QueryMsg::AllNftInfo {
             token_id: token_id.clone(),
             include_expired: Some(true),
         };
 
-        let response: cw721::AllNftInfoResponse<Extension> = self.query_contract(&query).await?;
+        let response: cw721::AllNftInfoResponse<Extension> = self
+            .ctx
+            .query_contract(self.ctx.soulbound_address.clone(), &query)
+            .await?;
         let token = TokenInfo {
             id: token_id,
             name: response.info.extension.id,
@@ -83,7 +91,6 @@ impl SoulboundToken {
         };
 
         tracing::debug!(
-            id = token.id,
             name = token.name,
             owner = token.owner,
             social_score = token.social_score,
@@ -91,17 +98,5 @@ impl SoulboundToken {
         );
 
         Ok(token)
-    }
-
-    async fn query_contract<T, R>(&self, data: &T) -> Result<R>
-    where
-        T: Serialize + ?Sized,
-        R: DeserializeOwned,
-    {
-        self.ctx
-            .cosmos
-            .cosmwasm
-            .smart_contract_state(self.ctx.soulbound_address.clone(), data)
-            .await
     }
 }
