@@ -6,7 +6,6 @@ use serde::Deserialize;
 mod ranking;
 
 pub use ranking::Ranking;
-pub use ranking::RANKING_FILE;
 
 pub fn load<'de, T>(path: PathBuf) -> anyhow::Result<T>
 where
