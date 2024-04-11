@@ -1,6 +1,7 @@
 mod app;
 mod block;
 mod clients;
+mod coin;
 mod config;
 mod context;
 mod csv;
