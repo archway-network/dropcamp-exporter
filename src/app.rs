@@ -8,7 +8,7 @@ use crate::prelude::*;
 use url::Url;
 
 const RPC_URL: &str = "https://rpc.mainnet.archway.io:443";
-const COINGECKO_URL: &str = "https://api.coingecko.com/api/v3";
+const COINGECKO_URL: &str = "https://api.coingecko.com";
 
 const RANKING_FILE: &str = "ranking.toml";
 const TOKEN_MAP_FILE: &str = "tokens.toml";
