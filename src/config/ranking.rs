@@ -1,7 +1,5 @@
 use serde::Deserialize;
 
-use super::ConfigLoader;
-
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct ActivitiesGroup<T> {
     pub weight: f32,
@@ -67,5 +65,3 @@ pub struct Ranking {
     pub archway: ActivitiesGroup<Archway>,
     pub ecosystem: ActivitiesGroup<Ecosystem>,
 }
-
-impl<'de> ConfigLoader<'de> for Ranking {}

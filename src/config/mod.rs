@@ -20,3 +20,7 @@ pub trait ConfigLoader<'de>: std::fmt::Debug + Deserialize<'de> + Sized {
         Ok(config)
     }
 }
+
+impl<'de> ConfigLoader<'de> for Ranking {}
+
+impl<'de> ConfigLoader<'de> for TokenMap {}
