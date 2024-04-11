@@ -1,9 +1,4 @@
-use std::path::PathBuf;
-
-use anyhow::Result;
 use serde::Deserialize;
-
-pub const RANKING_FILE: &str = "ranking.toml";
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct ActivitiesGroup<T> {
@@ -69,10 +64,4 @@ pub struct Ranking {
     pub social: ActivitiesGroup<Option<Social>>,
     pub archway: ActivitiesGroup<Archway>,
     pub ecosystem: ActivitiesGroup<Ecosystem>,
-}
-
-impl Ranking {
-    pub fn load(path: PathBuf) -> Result<Self> {
-        super::load(path)
-    }
 }

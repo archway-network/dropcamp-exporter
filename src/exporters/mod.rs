@@ -5,7 +5,7 @@ use crate::{prelude::*, queriers::soulbound::TokenInfo};
 
 mod archid;
 mod astrovault;
-mod balances;
+mod ibc;
 mod liquid;
 mod socials;
 mod staking;
@@ -25,7 +25,7 @@ pub async fn run(ctx: Arc<Context>) -> Result<()> {
 
     let exporters: Vec<Box<dyn Exporter>> = vec![
         Box::new(socials_exporter),
-        Box::new(balances::Balances::create(ctx.clone()).await?),
+        Box::new(ibc::Ibc::create(ctx.clone()).await?),
         Box::new(staking::Staking::create(ctx.clone()).await?),
         Box::new(archid::ArchId::create(ctx.clone()).await?),
         Box::new(liquid::LiquidFinance::create(ctx.clone()).await?),

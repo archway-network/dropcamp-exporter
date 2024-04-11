@@ -3,11 +3,9 @@ use std::{path::PathBuf, sync::Arc};
 use anyhow::*;
 use url::Url;
 
-use crate::{
-    clients::{AstrovaultClient, CosmosClient},
-    config::Ranking,
-    csv,
-};
+use crate::clients::*;
+use crate::config::*;
+use crate::csv;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Endpoint {
@@ -23,7 +21,9 @@ pub struct Context {
     pub liquid_finance_address: String,
     pub cosmos: Arc<CosmosClient>,
     pub astrovault: Arc<AstrovaultClient>,
+    pub coingecko: Arc<CoinGeckoClient>,
     pub ranking: Ranking,
+    pub token_map: TokenMap,
     output: PathBuf,
 }
 
@@ -65,7 +65,9 @@ pub struct ContextBuilder {
     archid_address: Option<String>,
     liquid_finance_address: Option<String>,
     astrovault: Option<Endpoint>,
+    coingecko: Option<Endpoint>,
     ranking_path: Option<PathBuf>,
+    token_map_path: Option<PathBuf>,
     output: Option<PathBuf>,
 }
 
@@ -113,8 +115,22 @@ impl ContextBuilder {
         self
     }
 
+    pub fn coingecko(mut self, url: Url) -> Self {
+        self.coingecko = Some(Endpoint {
+            url,
+            req_second: None,
+            api_key: None,
+        });
+        self
+    }
+
     pub fn ranking_path(mut self, ranking_path: PathBuf) -> Self {
         self.ranking_path = Some(ranking_path);
+        self
+    }
+
+    pub fn token_map_path(mut self, token_map_path: PathBuf) -> Self {
+        self.token_map_path = Some(token_map_path);
         self
     }
 
@@ -148,10 +164,23 @@ impl ContextBuilder {
             .build()
             .await?;
 
+        let coingecko_endpoint = self
+            .coingecko
+            .clone()
+            .ok_or(anyhow!("missing coingecko arguments"))?;
+        let coingecko = CoinGeckoClient::builder(coingecko_endpoint.url.clone())
+            .build()
+            .await?;
+
         let ranking_path = self
             .ranking_path
             .ok_or(anyhow!("missing ranking config file path"))?;
         let ranking = Ranking::load(ranking_path)?;
+
+        let token_map_path = self
+            .token_map_path
+            .ok_or(anyhow!("missing token map config file path"))?;
+        let token_map = TokenMap::load(token_map_path)?;
 
         let ctx = Context {
             soulbound_address,
@@ -159,7 +188,9 @@ impl ContextBuilder {
             liquid_finance_address,
             cosmos: Arc::new(cosmos),
             astrovault: Arc::new(astrovault),
+            coingecko: Arc::new(coingecko),
             ranking,
+            token_map,
             output,
         };
 

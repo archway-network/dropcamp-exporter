@@ -7,14 +7,18 @@ use crate::prelude::*;
 
 use url::Url;
 
-const RPC: &str = "https://rpc.mainnet.archway.io:443";
+const RPC_URL: &str = "https://rpc.mainnet.archway.io:443";
+const COINGECKO_URL: &str = "https://api.coingecko.com";
+
+const RANKING_FILE: &str = "ranking.toml";
+const TOKEN_MAP_FILE: &str = "tokens.toml";
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct App {
     /// Url for the RPC endpoint.
-    #[arg(long, default_value = RPC)]
+    #[arg(long, default_value = RPC_URL)]
     pub rpc_url: Url,
 
     /// Limits the number of requests per second to the RPC endpoint.
@@ -50,9 +54,17 @@ pub struct App {
     #[arg(long)]
     pub astrovault_api_key: Option<String>,
 
+    /// Url for the CoinGecko API.
+    #[arg(long, default_value = COINGECKO_URL)]
+    pub coingecko_url: Url,
+
     /// Path for the ranking config file.
-    #[arg(long, default_value = crate::config::RANKING_FILE)]
+    #[arg(long, default_value = RANKING_FILE)]
     pub ranking: PathBuf,
+
+    /// Path for a file containing the token denom mappings used to query CoinGecko.
+    #[arg(long, default_value = TOKEN_MAP_FILE)]
+    pub token_map: PathBuf,
 
     /// Directory path to output the CSV files.
     #[arg(short, long)]
@@ -76,7 +88,9 @@ impl App {
                 self.astrovault_req_second,
                 self.astrovault_api_key.clone(),
             )
+            .coingecko(self.coingecko_url.clone())
             .ranking_path(self.ranking.clone())
+            .token_map_path(self.token_map.clone())
             .output(self.output.clone())
             .build()
             .await?;

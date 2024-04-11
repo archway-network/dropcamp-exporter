@@ -82,7 +82,7 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 📁 output
 ├── 📄 archid.csv
 ├── 📄 astrovault.csv
-├── 📄 balances.csv
+├── 📄 ibc.csv
 ├── 📄 liquid-finance.csv
 ├── 📄 socials.csv
 └── 📄 staking.csv
@@ -105,20 +105,18 @@ All CSV files will be exported to the folder specified in the `--output` flag:
 - `has_traded` (`bool`): flag if address has traded
 - `tvl` (`float`): total value locked
 
-#### `balances.csv`
+#### `ibc.csv`
 
 - `address` (`string`): wallet address
-- `denom` (`string`): coin denominator (IBC tokens start with `ibc/`)
-- `amount` (`bigint`): token balance
-
-> [!NOTE]  
-> The `address` might appear multiple times, one for each `denom` it has.
+- `ranking` (`float`): ranking percentage for this activity
+- `usd` (`float`): total token balance in USD
+- `balances` (`string`): list of balances in the wallet separated by `,`
 
 #### `liquid-finance.csv`
 
 - `address` (`string`): wallet address
 - `ranking` (`float`): ranking percentage for this activity
-- `balance` (`bigint`): total `sARCH` balance rounded to 2 decimals
+- `balance` (`float`): total `sARCH` balance rounded to 2 decimals
 
 #### `socials.csv`
 
